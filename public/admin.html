@@ -459,7 +459,7 @@
                 </a>
             </div>
             <div class="menu-item">
-                <a href="/night-shift.html" class="menu-link" target="_blank">
+                <a href="#nightShift" class="menu-link" data-section="nightShift">
                     <i class="fas fa-moon"></i>
                     <span>พนักงานกลางคืน</span>
                 </a>
@@ -545,6 +545,69 @@
                                         <h6><i class="fas fa-list"></i> มีอะไรใหม่:</h6>
                                         <pre id="changelogText" class="mb-0" style="white-space: pre-wrap;"></pre>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🆕 Night Shift Section -->
+            <div id="nightShiftSection" class="content-section" style="display: none;">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card border-warning">
+                            <div class="card-header bg-dark text-white">
+                                <h5 class="mb-0"><i class="fas fa-moon"></i> ตั้งค่ากะกลางคืน</h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Info Alert -->
+                                <div class="alert alert-info mb-4">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>หมายเหตุ:</strong> พนักงานในรายชื่อนี้จะไม่ถูกลงเวลาออกอัตโนมัติตอน 23:59 น.
+                                    เหมาะสำหรับยามกลางคืนหรือพนักงานกะดึก
+                                </div>
+
+                                <!-- Add Employee -->
+                                <div class="card bg-light mb-4">
+                                    <div class="card-body">
+                                        <h6><i class="fas fa-plus-circle"></i> เพิ่มพนักงานกะกลางคืน</h6>
+                                        <div class="row mt-3">
+                                            <div class="col-md-8">
+                                                <select class="form-select" id="nightShiftEmployeeSelect">
+                                                    <option value="">-- กำลังโหลดรายชื่อพนักงาน... --</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <button class="btn btn-primary w-100" onclick="addNightShiftEmployee()">
+                                                    <i class="fas fa-plus"></i> เพิ่มพนักงาน
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Night Shift List -->
+                                <h6><i class="fas fa-list"></i> รายชื่อพนักงานกะกลางคืน</h6>
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-striped table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th width="60">#</th>
+                                                <th>ชื่อพนักงาน</th>
+                                                <th width="180">วันที่เพิ่ม</th>
+                                                <th width="120">จัดการ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="nightShiftTableBody">
+                                            <tr>
+                                                <td colspan="4" class="text-center py-4">
+                                                    <div class="spinner-border text-primary"></div>
+                                                    <p class="mt-2 mb-0">กำลังโหลดข้อมูล...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -1215,6 +1278,144 @@
             }
         }
 
+        // ========== 🆕 Night Shift Functions ==========
+
+        // โหลดรายชื่อพนักงานกะกลางคืน
+        async function loadNightShiftList() {
+            try {
+                const response = await makeApiCall('/api/admin/night-shift');
+                const result = await response.json();
+                const tbody = document.getElementById('nightShiftTableBody');
+
+                if (!result.success || !result.data || result.data.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <i class="fas fa-moon fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">ยังไม่มีพนักงานกะกลางคืน</h5>
+                                <p class="text-muted">เพิ่มพนักงานโดยเลือกจากรายการด้านบน</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = result.data.map((emp, idx) => `
+                    <tr>
+                        <td><span class="badge bg-secondary">${idx + 1}</span></td>
+                        <td>
+                            <i class="fas fa-user-shield text-warning me-2"></i>
+                            <strong>${emp.employee_name}</strong>
+                            <span class="badge bg-warning text-dark ms-2">กะกลางคืน</span>
+                        </td>
+                        <td>${formatNightShiftDate(emp.created_at)}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="removeNightShiftEmployee('${emp.employee_name}')">
+                                <i class="fas fa-trash"></i> ลบ
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading night shift list:', error);
+            }
+        }
+
+        // โหลดรายชื่อพนักงานทั้งหมดสำหรับ dropdown
+        async function loadNightShiftEmployeeDropdown() {
+            try {
+                const response = await makeApiCall('/api/admin/employees');
+                const result = await response.json();
+                const select = document.getElementById('nightShiftEmployeeSelect');
+
+                if (!result.success) {
+                    select.innerHTML = '<option value="">-- ไม่สามารถโหลดรายชื่อได้ --</option>';
+                    return;
+                }
+
+                select.innerHTML = '<option value="">-- เลือกพนักงาน --</option>' +
+                    result.data.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('');
+            } catch (error) {
+                console.error('Error loading employees:', error);
+            }
+        }
+
+        // เพิ่มพนักงานกะกลางคืน
+        async function addNightShiftEmployee() {
+            const select = document.getElementById('nightShiftEmployeeSelect');
+            const employeeName = select.value;
+
+            if (!employeeName) {
+                Swal.fire('แจ้งเตือน', 'กรุณาเลือกพนักงาน', 'warning');
+                return;
+            }
+
+            try {
+                const response = await makeApiCall('/api/admin/night-shift', {
+                    method: 'POST',
+                    body: JSON.stringify({ employeeName })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    Swal.fire('สำเร็จ', result.message || 'เพิ่มพนักงานกะกลางคืนสำเร็จ', 'success');
+                    select.value = '';
+                    loadNightShiftList();
+                } else {
+                    Swal.fire('ข้อผิดพลาด', result.message || result.error || 'เกิดข้อผิดพลาด', 'error');
+                }
+            } catch (error) {
+                Swal.fire('ข้อผิดพลาด', 'เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        // ลบพนักงานกะกลางคืน
+        async function removeNightShiftEmployee(employeeName) {
+            const result = await Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: `ต้องการลบ "${employeeName}" ออกจากกะกลางคืนใช่หรือไม่?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const response = await makeApiCall(`/api/admin/night-shift/${encodeURIComponent(employeeName)}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    Swal.fire('สำเร็จ', data.message || 'ลบพนักงานกะกลางคืนสำเร็จ', 'success');
+                    loadNightShiftList();
+                } else {
+                    Swal.fire('ข้อผิดพลาด', data.message || data.error || 'เกิดข้อผิดพลาด', 'error');
+                }
+            } catch (error) {
+                Swal.fire('ข้อผิดพลาด', 'เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        // Format date helper for night shift
+        function formatNightShiftDate(dateStr) {
+            if (!dateStr) return '-';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch {
+                return dateStr;
+            }
+        }
+
         // ========== 🆕 Auto-Update Functions ==========
 
         // โหลดเวอร์ชันปัจจุบัน
@@ -1454,20 +1655,28 @@
             document.querySelectorAll('.menu-link').forEach(link => {
                 link.classList.remove('active');
             });
-            document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+            const menuLink = document.querySelector(`[data-section="${sectionId}"]`);
+            if (menuLink) menuLink.classList.add('active');
 
             // อัพเดท page title
             const titles = {
                 dashboard: 'หน้าหลัก',
                 reports: 'รายงานและส่งออก',
                 employees: 'จัดการพนักงาน',
-                settings: 'ตั้งค่าระบบ'
+                settings: 'ตั้งค่าระบบ',
+                nightShift: 'ตั้งค่ากะกลางคืน'
             };
-            document.getElementById('pageTitle').textContent = titles[sectionId];
+            document.getElementById('pageTitle').textContent = titles[sectionId] || sectionId;
 
             // 🆕 Load Settings if section is settings
             if (sectionId === 'settings' && typeof loadSettings === 'function') {
                 loadSettings();
+            }
+
+            // 🆕 Load Night Shift data
+            if (sectionId === 'nightShift') {
+                loadNightShiftList();
+                loadNightShiftEmployeeDropdown();
             }
 
             if (sectionId === 'dashboard') {
