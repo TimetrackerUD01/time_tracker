@@ -1,5 +1,5 @@
 {
-    "version": "1.0.2",
+    "version": "1.0.3",
     "buildDate": "2024-12-18",
-    "changelog": "แก้ไขหน้าตั้งค่ากะกลางคืน"
+    "changelog": "ปรับแต่งระบบ แจ้งเตือน telegram"
 }
