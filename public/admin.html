@@ -502,42 +502,6 @@
         <div class="container-fluid p-4">
             <!-- Dashboard Section -->
             <div id="settingsSection" class="content-section" style="display: none;">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div
-                                class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0"><i class="fas fa-cogs"></i> ตั้งค่าระบบ (System Settings)</h5>
-                                <button class="btn btn-sm btn-light" onclick="loadSettings()">
-                                    <i class="fas fa-sync-alt"></i> รีโหลด
-                                </button>
-                            </div>
-                            <div class="card-body">
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <strong>คำเตือน:</strong> การแก้ไขค่าเหล่านี้อาจทำให้ระบบหยุดทำงาน หรือต้อง Restart
-                                    Server ใหม่ (โดยเฉพาะ PORT หรือ Database)
-                                </div>
-                                <form id="settingsForm" onsubmit="event.preventDefault(); saveSettings();">
-                                    <div id="settingsContainer">
-                                        <div class="text-center py-5">
-                                            <div class="spinner-border text-primary" role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                            </div>
-                                            <p class="mt-2">กำลังโหลดการตั้งค่า...</p>
-                                        </div>
-                                    </div>
-                                    <div class="mt-4 text-end">
-                                        <button type="submit" class="btn btn-success btn-lg">
-                                            <i class="fas fa-save"></i> บันทึกการตั้งค่า
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- 🆕 System Update Section -->
                 <div class="row mt-4">
                     <div class="col-md-12">
