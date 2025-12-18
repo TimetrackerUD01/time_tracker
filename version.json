@@ -1,5 +1,5 @@
 {
-    "version": "1.0.1",
+    "version": "1.0.3",
     "buildDate": "2024-12-18",
     "changelog": "- เพิ่ม Live Dashboard\n- เพิ่มระบบ Auto-Update\n- แก้ไขหน้าสถานะกระพริบ\n- แก้ไขหน้าตั้งค่า"
 }
