@@ -3266,6 +3266,136 @@ app.get('/api/status/history', (req, res) => {
   }
 });
 
+// ========== 🆕 Auto-Update System APIs ==========
+
+const { exec } = require('child_process');
+const util = require('util');
+const execPromise = util.promisify(exec);
+
+// GET /api/admin/check-update - ตรวจสอบเวอร์ชันใหม่
+app.get('/api/admin/check-update', authenticateAdmin, async (req, res) => {
+  try {
+    // อ่าน version ปัจจุบัน
+    const versionPath = path.join(__dirname, 'version.json');
+    let currentVersion = { version: '0.0.0', changelog: '' };
+
+    if (fs.existsSync(versionPath)) {
+      currentVersion = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
+    }
+
+    // ดึง version จาก GitHub
+    const githubUrl = 'https://raw.githubusercontent.com/TimetrackerUD01/time_tracker/main/version.json';
+    const response = await fetch(githubUrl);
+
+    if (!response.ok) {
+      return res.json({
+        success: true,
+        hasUpdate: false,
+        currentVersion: currentVersion.version,
+        latestVersion: currentVersion.version,
+        message: 'ไม่สามารถเชื่อมต่อ GitHub ได้'
+      });
+    }
+
+    const latestVersion = await response.json();
+    const hasUpdate = latestVersion.version !== currentVersion.version;
+
+    res.json({
+      success: true,
+      hasUpdate,
+      currentVersion: currentVersion.version,
+      latestVersion: latestVersion.version,
+      changelog: hasUpdate ? latestVersion.changelog : '',
+      buildDate: latestVersion.buildDate
+    });
+
+  } catch (error) {
+    console.error('Error checking update:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// POST /api/admin/update - ดำเนินการอัปเดต
+app.post('/api/admin/update', authenticateAdmin, async (req, res) => {
+  try {
+    console.log('🔄 Starting system update...');
+
+    // ตรวจสอบว่าอยู่ใน git repository หรือไม่
+    try {
+      await execPromise('git status', { cwd: __dirname });
+    } catch (gitError) {
+      return res.status(400).json({
+        success: false,
+        error: 'ไม่พบ Git repository - ต้อง clone จาก GitHub ก่อน'
+      });
+    }
+
+    // git fetch
+    console.log('📥 Fetching from GitHub...');
+    await execPromise('git fetch origin main', { cwd: __dirname });
+
+    // git pull
+    console.log('📥 Pulling latest code...');
+    const { stdout: pullOutput } = await execPromise('git pull origin main', { cwd: __dirname });
+    console.log('Pull output:', pullOutput);
+
+    // npm install (ถ้ามี package ใหม่)
+    console.log('📦 Installing dependencies...');
+    await execPromise('npm install --production', { cwd: __dirname });
+
+    // อ่าน version ใหม่
+    const versionPath = path.join(__dirname, 'version.json');
+    let newVersion = { version: 'unknown' };
+    if (fs.existsSync(versionPath)) {
+      newVersion = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
+    }
+
+    // ส่ง response ก่อน restart
+    res.json({
+      success: true,
+      message: `อัปเดตเป็นเวอร์ชัน ${newVersion.version} สำเร็จ!`,
+      version: newVersion.version,
+      restartIn: 3
+    });
+
+    // Restart PM2 หลังจากส่ง response
+    setTimeout(async () => {
+      try {
+        console.log('🔄 Restarting server with PM2...');
+        await execPromise('pm2 restart all');
+      } catch (pmError) {
+        console.log('ℹ️ PM2 restart failed, trying nodemon reload...');
+        // ถ้าไม่มี PM2 ก็ข้ามไป (nodemon จะ restart เอง)
+      }
+    }, 1000);
+
+  } catch (error) {
+    console.error('❌ Update failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// GET /api/admin/version - ดูเวอร์ชันปัจจุบัน
+app.get('/api/admin/version', (req, res) => {
+  try {
+    const versionPath = path.join(__dirname, 'version.json');
+    if (fs.existsSync(versionPath)) {
+      const version = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
+      res.json({ success: true, ...version });
+    } else {
+      res.json({ success: true, version: '1.0.0', changelog: '' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // ========== Error Handling ==========
 app.use((error, req, res, next) => {
   console.error('Global error handler:', error);

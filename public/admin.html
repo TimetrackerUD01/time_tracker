@@ -537,6 +537,55 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 🆕 System Update Section -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card border-info">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-cloud-download-alt"></i> อัปเดตระบบ (System Update)
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="fas fa-code-branch fa-3x text-info"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">เวอร์ชันปัจจุบัน</h6>
+                                                <span id="currentVersionDisplay"
+                                                    class="badge bg-secondary fs-5">v1.0.0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div id="updateStatusContainer">
+                                            <span class="text-muted"><i class="fas fa-info-circle"></i>
+                                                กดปุ่มเพื่อตรวจสอบอัปเดต</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <button class="btn btn-outline-info me-2" onclick="checkForUpdate()">
+                                            <i class="fas fa-search"></i> ตรวจสอบอัปเดต
+                                        </button>
+                                        <button id="updateBtn" class="btn btn-success" onclick="performUpdate()"
+                                            disabled>
+                                            <i class="fas fa-download"></i> อัปเดตระบบ
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="changelogContainer" class="mt-3" style="display: none;">
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-list"></i> มีอะไรใหม่:</h6>
+                                        <pre id="changelogText" class="mb-0" style="white-space: pre-wrap;"></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="dashboardSection" class="content-section">
@@ -1201,6 +1250,126 @@
                 }
             }
         }
+
+        // ========== 🆕 Auto-Update Functions ==========
+
+        // โหลดเวอร์ชันปัจจุบัน
+        async function loadCurrentVersion() {
+            try {
+                const response = await fetch('/api/admin/version');
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('currentVersionDisplay').textContent = 'v' + result.version;
+                }
+            } catch (error) {
+                console.error('Error loading version:', error);
+            }
+        }
+
+        // ตรวจสอบอัปเดต
+        async function checkForUpdate() {
+            const statusContainer = document.getElementById('updateStatusContainer');
+            const updateBtn = document.getElementById('updateBtn');
+            const changelogContainer = document.getElementById('changelogContainer');
+
+            statusContainer.innerHTML = '<span class="text-primary"><i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...</span>';
+
+            try {
+                const response = await makeApiCall('/api/admin/check-update');
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('currentVersionDisplay').textContent = 'v' + result.currentVersion;
+
+                    if (result.hasUpdate) {
+                        statusContainer.innerHTML = `
+                            <span class="text-success">
+                                <i class="fas fa-arrow-up"></i> 
+                                มีเวอร์ชันใหม่! <strong>v${result.latestVersion}</strong>
+                            </span>
+                        `;
+                        updateBtn.disabled = false;
+                        updateBtn.classList.add('btn-pulse');
+
+                        if (result.changelog) {
+                            changelogContainer.style.display = 'block';
+                            document.getElementById('changelogText').textContent = result.changelog;
+                        }
+                    } else {
+                        statusContainer.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> ระบบเป็นเวอร์ชันล่าสุดแล้ว</span>';
+                        updateBtn.disabled = true;
+                        changelogContainer.style.display = 'none';
+                    }
+                } else {
+                    statusContainer.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle"></i> ' + result.error + '</span>';
+                }
+            } catch (error) {
+                statusContainer.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> ไม่สามารถตรวจสอบได้</span>';
+                console.error('Check update error:', error);
+            }
+        }
+
+        // ดำเนินการอัปเดต
+        async function performUpdate() {
+            const result = await Swal.fire({
+                title: 'ยืนยันการอัปเดต?',
+                html: `
+                    <p>ระบบจะดาวน์โหลดโค้ดใหม่จาก GitHub และ Restart Server</p>
+                    <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> ระบบจะหยุดทำงานชั่วคราว 5-10 วินาที</p>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-download"></i> อัปเดตเลย',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (!result.isConfirmed) return;
+
+            const statusContainer = document.getElementById('updateStatusContainer');
+            const updateBtn = document.getElementById('updateBtn');
+
+            statusContainer.innerHTML = '<span class="text-primary"><i class="fas fa-spinner fa-spin"></i> กำลังอัปเดต... อย่าปิดหน้านี้</span>';
+            updateBtn.disabled = true;
+
+            try {
+                const response = await makeApiCall('/api/admin/update', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        title: 'อัปเดตสำเร็จ!',
+                        html: `
+                            <p>${data.message}</p>
+                            <p class="text-info">ระบบจะ Restart ใน ${data.restartIn} วินาที...</p>
+                            <p>หน้าเว็บจะรีโหลดอัตโนมัติ</p>
+                        `,
+                        icon: 'success',
+                        timer: 5000,
+                        showConfirmButton: false
+                    });
+
+                    // รอ server restart แล้ว reload
+                    setTimeout(() => {
+                        location.reload();
+                    }, 5000);
+                } else {
+                    Swal.fire('เกิดข้อผิดพลาด', data.error, 'error');
+                    statusContainer.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle"></i> ' + data.error + '</span>';
+                }
+            } catch (error) {
+                Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตได้: ' + error.message, 'error');
+                statusContainer.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle"></i> การอัปเดตล้มเหลว</span>';
+            }
+        }
+
+        // โหลดเวอร์ชันเมื่อเปิดหน้า Settings
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCurrentVersion();
+        });
 
         // Navigation
         async function loadSettings() {
