@@ -304,6 +304,23 @@
         .activity-list {
             max-height: 400px;
             overflow-y: auto;
+            transition: opacity 0.15s ease;
+        }
+
+        .activity-item.new-record {
+            animation: highlightNew 1s ease;
+        }
+
+        @keyframes highlightNew {
+            0% {
+                background: #d4edda;
+                transform: scale(1.02);
+            }
+
+            100% {
+                background: linear-gradient(180deg, #fff 0%, #f8f8f8 100%);
+                transform: scale(1);
+            }
         }
 
         .activity-item {
@@ -575,27 +592,42 @@
             }
         }
 
-        // Update activity list
+        // Update activity list (Smart update to prevent flickering)
+        let lastRecordsJson = '';
+
         function updateActivityList(records) {
             const container = document.getElementById('activityList');
 
             if (!records || records.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📭</div>
-                        <div>ไม่พบรายการลงเวลา</div>
-                    </div>
-                `;
+                if (lastRecordsJson !== 'empty') {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">📭</div>
+                            <div>ไม่พบรายการลงเวลา</div>
+                        </div>
+                    `;
+                    lastRecordsJson = 'empty';
+                }
                 return;
             }
 
-            // Check if there are new records
-            const firstRecordId = records[0]?.id;
-            const hasNewRecords = lastRecordId && firstRecordId !== lastRecordId;
-            lastRecordId = firstRecordId;
+            // Compare with previous data - skip if no changes
+            const newRecordsJson = JSON.stringify(records.map(r => r.id + r.type));
+            if (newRecordsJson === lastRecordsJson) {
+                return; // No changes, don't re-render
+            }
 
-            container.innerHTML = records.map((record, index) => `
-                <div class="activity-item" style="animation-delay: ${index * 0.05}s">
+            // Check for new records at top
+            const oldFirstId = lastRecordId;
+            const newFirstId = records[0]?.id;
+            const hasNewRecords = oldFirstId && newFirstId !== oldFirstId;
+
+            lastRecordId = newFirstId;
+            lastRecordsJson = newRecordsJson;
+
+            // Build new content
+            const newContent = records.map((record, index) => `
+                <div class="activity-item ${hasNewRecords && index === 0 ? 'new-record' : ''}" data-id="${record.id}-${record.type}">
                     <div class="status-icon ${record.type}">
                         ${record.type === 'in' ? '🟢' : '🔴'}
                     </div>
@@ -608,6 +640,13 @@
                     <div class="time">${record.timeOnly || '-'}</div>
                 </div>
             `).join('');
+
+            // Apply with fade transition
+            container.style.opacity = '0.7';
+            setTimeout(() => {
+                container.innerHTML = newContent;
+                container.style.opacity = '1';
+            }, 100);
         }
 
         // Escape HTML to prevent XSS
