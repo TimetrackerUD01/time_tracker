@@ -1,0 +1,3079 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ระบบจัดการลงเวลา อบต.ข่าใหญ่</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Admin อบต.ข่าใหญ่">
+    <meta name="description" content="ระบบจัดการลงเวลาออนไลน์ อบต.ข่าใหญ่ - หน้าผู้ดูแลระบบ">
+    <meta name="theme-color" content="#1a237e">
+
+    <!-- PWA Icons and Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="/logo.png">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=K2D:wght@300;400;600;700&family=Kanit:wght@300;400;600;700&display=swap');
+
+        * {
+            font-family: 'K2D', sans-serif;
+        }
+
+        body {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-header h6 {
+            color: white;
+            margin: 0;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .sidebar-header .org-name {
+            color: #bdc3c7;
+            font-size: 0.75rem;
+            margin-top: 5px;
+        }
+
+        .sidebar.collapsed .sidebar-header h6,
+        .sidebar.collapsed .sidebar-header .org-name {
+            display: none;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            margin-bottom: 5px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-link:hover,
+        .menu-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #3498db;
+        }
+
+        .menu-link i {
+            width: 20px;
+            margin-right: 15px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .menu-link span {
+            display: none;
+        }
+
+        .sidebar.collapsed .menu-link {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .sidebar.collapsed .menu-link i {
+            margin: 0;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        /* Header */
+        .top-header {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #6c757d;
+            cursor: pointer;
+        }
+
+        .page-title {
+            margin: 0;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #6c757d;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Cards */
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: none;
+            transition: transform 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stats-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Export Panel */
+        .export-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .export-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .export-form {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .form-control,
+        .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .btn-export {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+            color: white;
+        }
+
+        /* Working Employees */
+        .working-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .employee-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .employee-info {
+            flex: 1;
+        }
+
+        .employee-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .employee-time {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Employee Controls */
+        .employee-controls {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .employee-count {
+            text-align: center;
+            padding: 8px 0;
+        }
+
+        /* Pagination */
+        #employeePagination .page-link {
+            color: #2c3e50;
+            border-color: #dee2e6;
+        }
+
+        #employeePagination .page-item.active .page-link {
+            background-color: #2c3e50;
+            border-color: #2c3e50;
+        }
+
+        #employeePagination .page-link:hover {
+            color: #1a252f;
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+        }
+
+        /* Employee Item Animation */
+        .employee-item {
+            transition: all 0.3s ease;
+        }
+
+        .employee-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 80px;
+            }
+
+            .main-content {
+                margin-left: 80px;
+            }
+
+            .sidebar-header h6,
+            .sidebar-header .org-name,
+            .menu-link span {
+                display: none;
+            }
+
+            .menu-link {
+                justify-content: center;
+                padding: 12px;
+            }
+
+            .menu-link i {
+                margin: 0;
+            }
+
+            .top-header {
+                padding: 15px;
+            }
+
+            .user-info span {
+                display: none;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="/logo.png" alt="Logo">
+            <h6>ระบบจัดการลงเวลา</h6>
+            <div class="org-name">อบต.ข่าใหญ่</div>
+        </div>
+
+        <div class="sidebar-menu">
+            <div class="menu-item">
+                <a href="#dashboard" class="menu-link active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>หน้าหลัก</span>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="#reports" class="menu-link" data-section="reports">
+                    <i class="fas fa-file-excel"></i>
+                    <span>รายงานและส่งออก</span>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="#employees" class="menu-link" data-section="employees">
+                    <i class="fas fa-users"></i>
+                    <span>จัดการพนักงาน</span>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="/night-shift.html" class="menu-link" target="_blank">
+                    <i class="fas fa-moon"></i>
+                    <span>พนักงานกลางคืน</span>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="#settings" class="menu-link" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>ตั้งค่าระบบ</span>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="#" class="menu-link" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>ออกจากระบบ</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Header -->
+        <div class="top-header">
+            <div class="header-left">
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h4 class="page-title" id="pageTitle">หน้าหลัก</h4>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <small id="currentTime" style="margin-right: 15px; color: #6c757d;"></small>
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <span id="userName">ผู้ดูแลระบบ</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="container-fluid p-4">
+            <!-- Dashboard Section -->
+            <div id="settingsSection" class="content-section" style="display: none;">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div
+                                class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-cogs"></i> ตั้งค่าระบบ (System Settings)</h5>
+                                <button class="btn btn-sm btn-light" onclick="loadSettings()">
+                                    <i class="fas fa-sync-alt"></i> รีโหลด
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>คำเตือน:</strong> การแก้ไขค่าเหล่านี้อาจทำให้ระบบหยุดทำงาน หรือต้อง Restart
+                                    Server ใหม่ (โดยเฉพาะ PORT หรือ Database)
+                                </div>
+                                <form id="settingsForm" onsubmit="event.preventDefault(); saveSettings();">
+                                    <div id="settingsContainer">
+                                        <div class="text-center py-5">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-2">กำลังโหลดการตั้งค่า...</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 text-end">
+                                        <button type="submit" class="btn btn-success btn-lg">
+                                            <i class="fas fa-save"></i> บันทึกการตั้งค่า
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dashboardSection" class="content-section">
+                <!-- 🆕 Action Buttons Row -->
+                <div class="d-flex justify-content-end mb-3">
+                    <button class="btn btn-outline-warning btn-sm me-2" onclick="repairOnWorkStatus()">
+                        <i class="fas fa-hammer"></i> ซ่อมสถานะทำงาน
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm me-2" onclick="forceReloadFromSheets()">
+                        <i class="fas fa-sync-alt"></i> โหลดจาก Sheets
+                    </button>
+                    <button class="btn btn-outline-success btn-sm" onclick="loadStats()">
+                        <i class="fas fa-redo"></i> รีเฟรช
+                    </button>
+                </div>
+                <!-- Stats Cards -->
+                <div class="row">
+                    <div class="col-md-3 mb-4">
+                        <div class="stats-card">
+                            <div class="stats-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stats-number" id="totalEmployees">0</div>
+                            <div class="stats-label">พนักงานทั้งหมด</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-4">
+                        <div class="stats-card" onclick="showDetailModal('present')" style="cursor: pointer;"
+                            title="คลิกเพื่อดูรายชื่อ">
+                            <div class="stats-icon" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="stats-number" id="presentToday">0</div>
+                            <div class="stats-label">มาทำงานวันนี้ <i class="fas fa-external-link-alt"
+                                    style="font-size: 0.7rem; opacity: 0.7;"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-4">
+                        <div class="stats-card" onclick="showDetailModal('working')" style="cursor: pointer;"
+                            title="คลิกเพื่อดูรายชื่อ">
+                            <div class="stats-icon" style="background: linear-gradient(135deg, #ffc107, #fd7e14);">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stats-number" id="workingNow">0</div>
+                            <div class="stats-label">กำลังทำงาน <i class="fas fa-external-link-alt"
+                                    style="font-size: 0.7rem; opacity: 0.7;"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-4">
+                        <div class="stats-card" onclick="showDetailModal('absent')" style="cursor: pointer;"
+                            title="คลิกเพื่อดูรายชื่อ">
+                            <div class="stats-icon" style="background: linear-gradient(135deg, #dc3545, #e74c3c);">
+                                <i class="fas fa-user-times"></i>
+                            </div>
+                            <div class="stats-number" id="absentToday">0</div>
+                            <div class="stats-label">ขาดงานวันนี้ <i class="fas fa-external-link-alt"
+                                    style="font-size: 0.7rem; opacity: 0.7;"></i></div>
+                        </div>
+                    </div>
+                </div> <!-- Currently Working Employees -->
+                <div class="working-panel">
+                    <h5 class="export-title">
+                        <i class="fas fa-users-cog"></i>
+                        พนักงานที่กำลังทำงาน
+                    </h5>
+
+                    <!-- Employee Filter Controls -->
+                    <div class="employee-controls mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="employeeSearch"
+                                        placeholder="ค้นหาชื่อพนักงาน..." onkeyup="filterEmployees()">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="itemsPerPage" onchange="changeItemsPerPage()">
+                                    <option value="10">แสดง 10 รายการ</option>
+                                    <option value="30" selected>แสดง 30 รายการ</option>
+                                    <option value="50">แสดง 50 รายการ</option>
+                                    <option value="100">แสดง 100 รายการ</option>
+                                    <option value="all">แสดงทั้งหมด</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="sortBy" onchange="sortEmployees()">
+                                    <option value="name">เรียงตามชื่อ</option>
+                                    <option value="clockin">เรียงตามเวลาเข้างาน</option>
+                                    <option value="workinghours">เรียงตามชั่วโมงทำงาน</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="employee-count">
+                                    <small class="text-muted">
+                                        <span id="displayedCount">0</span> / <span id="totalCount">0</span> คน
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employee List -->
+                    <div id="workingEmployeesList">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div id="employeePagination" class="d-flex justify-content-center mt-3">
+                        <!-- Pagination will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div id="reportsSection" class="content-section" style="display: none;">
+                <div class="export-panel">
+                    <h5 class="export-title">
+                        <i class="fas fa-file-excel"></i>
+                        ส่งออกรายงานเป็น Excel
+                    </h5>
+
+                    <!-- รายงานรายวัน -->
+                    <div class="export-form">
+                        <h6 class="mb-3">
+                            <i class="fas fa-calendar-day"></i>
+                            รายงานรายวัน
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">เลือกวันที่</label>
+                                    <input type="date" class="form-control" id="dailyDate" value="">
+                                </div>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <div class="form-group">
+                                    <button class="btn-export" onclick="exportDaily()">
+                                        <i class="fas fa-download"></i>
+                                        ส่งออกรายวัน
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- รายงานรายเดือน -->
+                    <div class="export-form">
+                        <h6 class="mb-3">
+                            <i class="fas fa-calendar-alt"></i>
+                            รายงานรายเดือน
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="form-label">เดือน</label>
+                                    <select class="form-select" id="monthSelect">
+                                        <option value="1">มกราคม</option>
+                                        <option value="2">กุมภาพันธ์</option>
+                                        <option value="3">มีนาคม</option>
+                                        <option value="4">เมษายน</option>
+                                        <option value="5">พฤษภาคม</option>
+                                        <option value="6">มิถุนายน</option>
+                                        <option value="7">กรกฎาคม</option>
+                                        <option value="8">สิงหาคม</option>
+                                        <option value="9">กันยายน</option>
+                                        <option value="10">ตุลาคม</option>
+                                        <option value="11">พฤศจิกายน</option>
+                                        <option value="12">ธันวาคม</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="form-label">ปี พ.ศ.</label>
+                                    <select class="form-select" id="yearSelect">
+                                        <!-- ปีจะถูกเพิ่มด้วย JavaScript -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">รูปแบบรายงาน</label>
+                                    <select class="form-select" id="reportFormat">
+                                        <option value="dailySummary">🆕 แยกวัน + สรุปสาย/ขาด (แนะนำ)</option>
+                                        <option value="detailed">รายงานแบ่งตามวัน (แสดงแต่ละวันชัดเจน)</option>
+                                        <option value="summary">รายงานสรุปเท่านั้น</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <button class="btn-export" onclick="exportMonthly()">
+                                        <i class="fas fa-download"></i>
+                                        ส่งออกรายงานรายเดือน
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- รายงานช่วงวันที่ -->
+                    <div class="export-form">
+                        <h6 class="mb-3">
+                            <i class="fas fa-calendar-week"></i>
+                            รายงานช่วงวันที่
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">วันที่เริ่มต้น</label>
+                                    <input type="date" class="form-control" id="startDate">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">วันที่สิ้นสุด</label>
+                                    <input type="date" class="form-control" id="endDate">
+                                </div>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="form-group">
+                                    <button class="btn-export" onclick="exportRange()">
+                                        <i class="fas fa-download"></i>
+                                        ส่งออกช่วงวันที่
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employees Section -->
+            <div id="employeesSection" class="content-section" style="display: none;">
+                <!-- Manual Clock In/Out -->
+                <div class="working-panel mb-4">
+                    <h5 class="export-title">
+                        <i class="fas fa-clock"></i>
+                        ลงเวลาเข้า/ออกแบบกำหนดเอง
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="form-label">พนักงาน (เลือกได้หลายคน)</label>
+                            <select class="form-select" id="manualEmployee" multiple size="8">
+                                <option value="" disabled>-- เลือกพนักงาน --</option>
+                            </select>
+                            <small class="text-muted">กด Ctrl/Cmd หรือ Shift เพื่อเลือกหลายคนพร้อมกัน</small>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">วันที่</label>
+                            <input type="date" class="form-control" id="manualDate">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">เวลา</label>
+                            <input type="time" class="form-control" id="manualTime">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">หมายเหตุ</label>
+                            <input type="text" class="form-control" id="manualNote" placeholder="หมายเหตุ (ถ้ามี)">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end gap-2">
+                            <button class="btn btn-success" onclick="manualClockIn()">
+                                <i class="fas fa-sign-in-alt"></i> เข้า
+                            </button>
+                            <button class="btn btn-danger" onclick="manualClockOut()">
+                                <i class="fas fa-sign-out-alt"></i> ออก
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🆕 ค้นหารายการย้อนหลัง -->
+                <div class="working-panel mb-4">
+                    <h5 class="export-title">
+                        <i class="fas fa-history"></i>
+                        ค้นหาและแก้ไขรายการย้อนหลัง
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label">ค้นหาพนักงาน</label>
+                            <select class="form-select" id="historyEmployee">
+                                <option value="">-- เลือกพนักงาน --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">วันที่</label>
+                            <input type="date" class="form-control" id="historyDate">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button class="btn btn-primary w-100" onclick="searchHistoricalRecords()">
+                                <i class="fas fa-search"></i> ค้นหา
+                            </button>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button class="btn btn-warning w-100" onclick="removeDuplicateRecords()">
+                                <i class="fas fa-broom"></i> ลบรายการซ้ำ (เหลือ 1 คน/วัน)
+                            </button>
+                        </div>
+                    </div>
+                    <div id="historicalRecordsResult" class="mt-3" style="display: none;">
+                        <!-- ผลลัพธ์จะแสดงที่นี่ -->
+                    </div>
+                </div>
+
+                <!-- Employee List -->
+                <div class="working-panel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="export-title mb-0">
+                            <i class="fas fa-users"></i>
+                            จัดการพนักงาน
+                        </h5>
+                        <button class="btn btn-primary" onclick="showAddEmployeeModal()">
+                            <i class="fas fa-plus"></i> เพิ่มพนักงาน
+                        </button>
+                    </div>
+
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="employeeSearchInput" placeholder="ค้นหาพนักงาน..."
+                            onkeyup="filterEmployeeList()">
+                    </div>
+
+                    <div id="employeeListContainer">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary"></div>
+                            <p class="mt-2">กำลังโหลดข้อมูล...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settingsSection" class="content-section" style="display: none;">
+                <div class="working-panel">
+                    <h5 class="export-title">
+                        <i class="fas fa-cog"></i>
+                        ตั้งค่าระบบ
+                    </h5>
+                    <p class="text-muted">ฟีเจอร์นี้จะพัฒนาในเวอร์ชันถัดไป</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Detail Modal -->
+    <div class="modal fade" id="statsDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">
+                        <i class="fas fa-users"></i> รายชื่อ
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2">กำลังโหลดข้อมูล...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <span class="text-muted me-auto" id="modalCount"></span>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Time Modal -->
+    <div class="modal fade" id="editTimeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-clock" style="color: #667eea;"></i> แก้ไขเวลา
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editRecordId">
+                    <div class="mb-3">
+                        <label class="form-label">พนักงาน</label>
+                        <input type="text" class="form-control" id="editEmployeeName" readonly>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">วันที่เข้า</label>
+                            <input type="date" class="form-control" id="editClockInDate">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">เวลาเข้า</label>
+                            <input type="time" class="form-control" id="editClockInTime">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">วันที่ออก</label>
+                            <input type="date" class="form-control" id="editClockOutDate">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">เวลาออก</label>
+                            <input type="time" class="form-control" id="editClockOutTime">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">หมายเหตุ</label>
+                        <input type="text" class="form-control" id="editNote" placeholder="เหตุผลในการแก้ไข">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTimeEdit()">
+                        <i class="fas fa-save"></i> บันทึก
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // การตั้งค่าพื้นฐาน
+        const API_BASE_URL = window.location.origin;
+        let currentUser = null;
+        let tokenRefreshTimeout = null;
+
+        // ตรวจสอบการล็อกอิน
+        function checkAuth() {
+            const token = localStorage.getItem('adminToken');
+            const user = localStorage.getItem('adminUser');
+
+            if (!token || !user) {
+                window.location.href = '/admin/login';
+                return false;
+            }
+
+            try {
+                currentUser = JSON.parse(user);
+                document.getElementById('userName').textContent = currentUser.name || 'ผู้ดูแลระบบ';
+                document.getElementById('userAvatar').textContent = (currentUser.name || 'A').charAt(0).toUpperCase();
+
+                // ตั้งค่า auto token refresh
+                setupTokenRefresh();
+
+                return true;
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+                logout();
+                return false;
+            }
+        }
+
+        // ตั้งค่าการต่ออายุ token อัตโนมัติ
+        function setupTokenRefresh() {
+            // ล้าง timeout เดิม
+            if (tokenRefreshTimeout) {
+                clearTimeout(tokenRefreshTimeout);
+            }
+
+            // ตั้งเวลาให้ refresh token ทุก 20 ชั่วโมง (ก่อนหมดอายุ 4 ชั่วโมง)
+            tokenRefreshTimeout = setTimeout(async () => {
+                await refreshToken();
+            }, 20 * 60 * 60 * 1000); // 20 hours
+        }
+
+        // ฟังก์ชันต่ออายุ token
+        async function refreshToken() {
+            try {
+                const token = localStorage.getItem('adminToken');
+                if (!token) {
+                    throw new Error('No token available');
+                }
+
+                console.log('🔄 Attempting to refresh token...');
+
+                const response = await fetch(`${API_BASE_URL}/api/admin/refresh-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // บันทึก token ใหม่
+                    localStorage.setItem('adminToken', result.token);
+                    localStorage.setItem('adminUser', JSON.stringify(result.user));
+
+                    console.log('✅ Token refreshed successfully');
+
+                    // ตั้งค่า auto refresh ครั้งต่อไป
+                    setupTokenRefresh();
+
+                    // แสดงการแจ้งเตือนแบบเงียบๆ
+                    showQuietNotification('🔄 ระบบต่ออายุการเข้าสู่ระบบอัตโนมัติแล้ว');
+
+                } else {
+                    throw new Error(result.error || 'Failed to refresh token');
+                }
+
+            } catch (error) {
+                console.error('Token refresh failed:', error);
+
+                // หาก token หมดอายุนานเกินไป หรือมีปัญหาอื่น
+                if (error.message.includes('expired too long') || error.message.includes('invalid')) {
+                    Swal.fire({
+                        title: 'หมดอายุการเข้าสู่ระบบ',
+                        text: 'เซสชันของคุณหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่',
+                        icon: 'warning',
+                        confirmButtonText: 'เข้าสู่ระบบใหม่',
+                        allowOutsideClick: false
+                    }).then(() => {
+                        logout();
+                    });
+                } else {
+                    // พยายาม refresh อีกครั้งหลัง 5 นาที
+                    setTimeout(() => refreshToken(), 5 * 60 * 1000);
+                }
+            }
+        }
+
+        // แสดงการแจ้งเตือนแบบเงียบๆ
+        function showQuietNotification(message) {
+            // สร้าง toast notification เงียบๆ
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: #28a745;
+                color: white;
+                padding: 10px 15px;
+                border-radius: 5px;
+                font-size: 0.9rem;
+                z-index: 9999;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            // แสดง toast
+            setTimeout(() => toast.style.opacity = '1', 100);
+
+            // ซ่อน toast หลัง 3 วินาที
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // ปรับปรุงฟังก์ชัน API call ให้จัดการ token หมดอายุ
+        async function makeApiCall(url, options = {}) {
+            const token = localStorage.getItem('adminToken');
+
+            // 🆕 แก้ไข: merge headers ก่อน แล้วค่อย merge options พร้อมกับ headers ใหม่
+            const mergedHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+
+            const finalOptions = {
+                ...options,
+                headers: mergedHeaders
+            };
+
+            try {
+                const response = await fetch(url, finalOptions);
+
+                // ตรวจสอบ token หมดอายุ
+                if (response.status === 401) {
+                    const errorData = await response.json().catch(() => ({}));
+
+                    if (errorData.errorCode === 'TOKEN_EXPIRED') {
+                        console.log('🔄 Token expired, attempting refresh...');
+
+                        const refreshSuccess = await refreshToken();
+                        if (refreshSuccess) {
+                            // ลองเรียก API อีกครั้งด้วย token ใหม่
+                            const newToken = localStorage.getItem('adminToken');
+                            defaultOptions.headers.Authorization = `Bearer ${newToken}`;
+                            return await fetch(url, defaultOptions);
+                        }
+                    }
+
+                    // หาก refresh ไม่สำเร็จ ให้ redirect ไป login
+                    Swal.fire({
+                        title: 'หมดอายุการเข้าสู่ระบบ',
+                        text: 'กรุณาเข้าสู่ระบบใหม่',
+                        icon: 'warning',
+                        confirmButtonText: 'ตกลง'
+                    }).then(() => {
+                        logout();
+                    });
+
+                    throw new Error('Authentication failed');
+                }
+
+                return response;
+
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
+        }
+
+        // Toggle Sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+
+        // 🆕 Force Reload from Sheets
+        async function forceReloadFromSheets() {
+            const result = await Swal.fire({
+                title: 'โหลดจาก Sheets?',
+                text: 'ระบบจะดึงข้อมูลใหม่จาก Google Sheets มาอัปเดท (อาจใช้เวลาสักครู่)',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'โหลด',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'กำลังโหลดข้อมูล...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                try {
+                    const response = await makeApiCall(`${API_BASE_URL}/api/admin/force-reload-from-sheets`, {
+                        method: 'POST'
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        Swal.fire('สำเร็จ!', data.message, 'success');
+                        loadStats();
+                    } else {
+                        Swal.fire('ผิดพลาด', data.error, 'error');
+                    }
+                } catch (error) {
+                    Swal.fire('ผิดพลาด', error.message, 'error');
+                }
+            }
+        }
+
+        // Navigation
+        async function loadSettings() {
+            try {
+                const container = document.getElementById('settingsContainer');
+                container.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div><p>Loading...</p></div>';
+
+                const response = await makeApiCall('/api/admin/settings');
+                const result = await response.json();
+
+                if (result.success) {
+                    let html = '';
+                    const groups = {
+                        'GOOGLE': [],
+                        'LINE': [],
+                        'APP': [],
+                        'OTHER': []
+                    };
+
+                    // Group keys
+                    Object.entries(result.settings).forEach(([key, value]) => {
+                        // Skip sensitive keys if needed, or mask them
+                        if (key.startsWith('GOOGLE_') || key.includes('SHEET')) groups['GOOGLE'].push({ key, value });
+                        else if (key.startsWith('LINE_') || key.startsWith('LIF')) groups['LINE'].push({ key, value });
+                        else if (key.startsWith('ADMIN_') || key === 'PORT' || key === 'TIMEZONE' || key.includes('RENDER')) groups['APP'].push({ key, value });
+                        else groups['OTHER'].push({ key, value });
+                    });
+
+                    // Render groups
+                    for (const [groupName, items] of Object.entries(groups)) {
+                        if (items.length === 0) continue;
+
+                        let headerIcon = 'cogs';
+                        let headerTitle = 'อื่นๆ';
+                        if (groupName === 'GOOGLE') { headerIcon = 'file-excel'; headerTitle = 'Google Sheets Config'; }
+                        if (groupName === 'LINE') { headerIcon = 'comments'; headerTitle = 'LINE Official Config'; }
+                        if (groupName === 'APP') { headerIcon = 'server'; headerTitle = 'Application Config'; }
+
+                        html += `
+                        <div class="card mb-3 border-0 shadow-sm">
+                            <div class="card-header bg-light fw-bold">
+                                <i class="fas fa-${headerIcon}"></i> ${headerTitle}
+                            </div>
+                            <div class="card-body">
+                                ${items.map(item => `
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-4 col-form-label text-end text-muted small user-select-all">${item.key}</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" class="form-control font-monospace form-control-sm" 
+                                                name="${item.key}" value="${item.value}" 
+                                                ${item.key.includes('PRIVATE_KEY') ? 'type="password"' : ''}>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>`;
+                    }
+
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = `<div class="alert alert-danger">${result.error || 'Failed to load settings'}</div>`;
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('settingsContainer').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function saveSettings() {
+            try {
+                const form = document.getElementById('settingsForm');
+                const inputs = form.querySelectorAll('input');
+                const newSettings = {};
+
+                inputs.forEach(input => {
+                    newSettings[input.name] = input.value;
+                });
+
+                const confirm = await Swal.fire({
+                    title: 'บันทึกการตั้งค่า?',
+                    text: "การเปลี่ยนแปลงนี้จะมีผลทันที หรือหลังจาก Restart Server",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'บันทึก',
+                    cancelButtonText: 'ยกเลิก'
+                });
+
+                if (confirm.isConfirmed) {
+                    Swal.showLoading();
+                    const response = await makeApiCall('/api/admin/settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newSettings)
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        Swal.fire('สำเร็จ', result.message, 'success');
+                    } else {
+                        Swal.fire('ผิดพลาด', result.error, 'error');
+                    }
+                }
+            } catch (error) {
+                Swal.fire('Error', error.message, 'error');
+            }
+        }
+
+        function showSection(sectionId) {
+            // ซ่อนทุก section
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+
+            // แสดง section ที่เลือก
+            document.getElementById(sectionId + 'Section').style.display = 'block';
+
+            // อัพเดท active menu
+            document.querySelectorAll('.menu-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+            // อัพเดท page title
+            const titles = {
+                dashboard: 'หน้าหลัก',
+                reports: 'รายงานและส่งออก',
+                employees: 'จัดการพนักงาน',
+                settings: 'ตั้งค่าระบบ'
+            };
+            document.getElementById('pageTitle').textContent = titles[sectionId];
+
+            // 🆕 Load Settings if section is settings
+            if (sectionId === 'settings' && typeof loadSettings === 'function') {
+                loadSettings();
+            }
+
+            if (sectionId === 'dashboard') {
+                loadStats();
+            }
+        }
+
+        // Event listeners สำหรับเมนู
+        document.querySelectorAll('.menu-link[data-section]').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const section = this.getAttribute('data-section');
+                showSection(section);
+
+                // 🆕 โหลดข้อมูลเมื่อเปิดหน้าพนักงาน
+                if (section === 'employees') {
+                    loadEmployees();
+                }
+            });
+        });
+
+        // 🆕 แสดง Modal รายละเอียด stats
+        async function showDetailModal(type) {
+            const modal = new bootstrap.Modal(document.getElementById('statsDetailModal'));
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            const modalCount = document.getElementById('modalCount');
+
+            const titles = {
+                'present': { icon: 'fa-user-check', title: 'มาทำงานวันนี้', color: '#28a745' },
+                'late': { icon: 'fa-clock', title: 'มาสาย', color: '#ffc107' },
+                'absent': { icon: 'fa-user-times', title: 'ขาดงานวันนี้', color: '#dc3545' },
+                'working': { icon: 'fa-briefcase', title: 'กำลังทำงาน', color: '#fd7e14' }
+            };
+
+            const config = titles[type] || { icon: 'fa-users', title: 'รายชื่อ', color: '#667eea' };
+            modalTitle.innerHTML = `<i class="fas ${config.icon}" style="color: ${config.color}"></i> ${config.title}`;
+            modalTitle.setAttribute('data-type', type); // 🆕 เก็บ type สำหรับรีโหลดหลังลบ
+            modalBody.innerHTML = `<div class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2">กำลังโหลดข้อมูล...</p></div>`;
+            modalCount.textContent = '';
+
+            modal.show();
+
+            try {
+                const response = await makeApiCall(`${API_BASE_URL}/api/admin/stats/${type}`);
+                const result = await response.json();
+
+                if (result.success && result.data.length > 0) {
+                    let html = '<div class="table-responsive"><table class="table table-hover">';
+                    html += '<thead><tr><th>#</th><th>ชื่อ</th>';
+
+                    // เพิ่ม columns ตามประเภท
+                    if (type === 'present') html += '<th>เวลาเข้า</th><th>สถานะ</th><th>แก้ไข</th>';
+                    else if (type === 'late') html += '<th>เวลาเข้า</th><th>มาสาย</th><th>แก้ไข</th>';
+                    else if (type === 'working') html += '<th>เวลาเข้า</th><th>ทำงาน</th><th>แก้ไข</th>';
+
+                    html += '</tr></thead><tbody>';
+
+                    result.data.forEach((emp, index) => {
+                        html += `<tr><td>${index + 1}</td><td><strong>${emp.name}</strong></td>`;
+
+                        if (type === 'present') {
+                            const statusBadge = emp.status === 'สาย'
+                                ? '<span class="badge bg-warning">สาย</span>'
+                                : '<span class="badge bg-success">ตรงเวลา</span>';
+                            html += `<td>${emp.clockIn}</td><td>${statusBadge}</td>`;
+                            html += `<td>
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="showEditTimeModal('${emp.name.replace(/'/g, "\\'")}', '${emp.clockIn}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteTimeRecord('${emp.name.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>
+                            </td>`;
+                        } else if (type === 'late') {
+                            html += `<td>${emp.clockIn}</td><td><span class="badge bg-warning">${emp.lateBy}</span></td>`;
+                            html += `<td>
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="showEditTimeModal('${emp.name.replace(/'/g, "\\'")}', '${emp.clockIn}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteTimeRecord('${emp.name.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>
+                            </td>`;
+                        } else if (type === 'working') {
+                            html += `<td>${emp.clockIn}</td><td><span class="badge bg-info">${emp.workingHours}</span></td>`;
+                            html += `<td>
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="showEditTimeModal('${emp.name.replace(/'/g, "\\'")}', '${emp.clockIn}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteTimeRecord('${emp.name.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>
+                            </td>`;
+                        }
+
+                        html += '</tr>';
+                    });
+
+                    html += '</tbody></table></div>';
+                    modalBody.innerHTML = html;
+                    modalCount.textContent = `ทั้งหมด ${result.count} คน`;
+                } else {
+                    modalBody.innerHTML = `<div class="text-center py-4 text-muted"><i class="fas fa-inbox fa-3x mb-3"></i><p>ไม่พบข้อมูล</p></div>`;
+                    modalCount.textContent = '0 คน';
+                }
+            } catch (error) {
+                console.error('Error loading detail:', error);
+                modalBody.innerHTML = `<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle fa-3x mb-3"></i><p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p></div>`;
+            }
+        }
+
+        // โหลดข้อมูลสถิติ
+        async function loadStats() {
+            try {
+                const response = await makeApiCall(`${API_BASE_URL}/api/admin/stats`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to load stats');
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const stats = result.data;
+                    document.getElementById('totalEmployees').textContent = stats.totalEmployees || 0;
+                    document.getElementById('presentToday').textContent = stats.presentToday || 0;
+                    document.getElementById('workingNow').textContent = stats.workingNow || 0;
+                    document.getElementById('absentToday').textContent = stats.absentToday || 0;
+
+                    // Debug: แสดงข้อมูลที่ได้รับจาก server
+                    console.log('📊 Stats data from server:', stats);
+                    if (stats.workingEmployees) {
+                        console.log('👥 Working employees raw data:', stats.workingEmployees);
+                    }
+
+                    // โหลดรายชื่อพนักงานที่กำลังทำงาน
+                    loadWorkingEmployees(stats.workingEmployees || []);
+                }
+
+            } catch (error) {
+                console.error('Error loading stats:', error);
+
+                // แสดงข้อผิดพลาดในรูปแบบที่เป็นมิตร
+                if (error.message === 'Authentication failed') {
+                    // จัดการโดย makeApiCall แล้ว
+                    return;
+                }
+
+                // แสดงข้อผิดพลาดอื่นๆ
+                showQuietNotification('⚠️ ไม่สามารถโหลดข้อมูลได้ กำลังลองใหม่...');
+
+                // ลองโหลดใหม่หลัง 10 วินาที
+                setTimeout(loadStats, 10000);
+            }
+        }
+
+        // ========== 🆕 Employee Management Functions ==========
+
+        let allEmployees = [];
+
+        async function loadEmployees() {
+            const container = document.getElementById('employeeListContainer');
+            const select = document.getElementById('manualEmployee');
+
+            try {
+                const response = await makeApiCall(`${API_BASE_URL}/api/admin/employees`);
+                const result = await response.json();
+
+                if (result.success) {
+                    allEmployees = result.data;
+                    renderEmployeeList(allEmployees);
+
+                    // อัปเดท dropdown สำหรับ manual clock
+                    select.innerHTML = '<option value="" disabled>-- เลือกพนักงาน --</option>';
+                    allEmployees.forEach(emp => {
+                        const opt = document.createElement('option');
+                        opt.value = emp.name;
+                        opt.textContent = emp.name + (emp.isWorking ? ' 🟢' : '');
+                        select.appendChild(opt);
+                    });
+
+                    // 🆕 อัปเดท dropdown สำหรับค้นหาย้อนหลัง
+                    const historySelect = document.getElementById('historyEmployee');
+                    if (historySelect) {
+                        historySelect.innerHTML = '<option value="">-- ทุกคน --</option>';
+                        allEmployees.forEach(emp => {
+                            const opt = document.createElement('option');
+                            opt.value = emp.name;
+                            opt.textContent = emp.name;
+                            historySelect.appendChild(opt);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading employees:', error);
+                container.innerHTML = '<div class="text-center text-danger py-4"><i class="fas fa-exclamation-triangle"></i> ไม่สามารถโหลดข้อมูลได้</div>';
+            }
+        }
+
+        function renderEmployeeList(employees) {
+            const container = document.getElementById('employeeListContainer');
+
+            if (employees.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-4"><i class="fas fa-inbox fa-3x mb-3"></i><p>ไม่พบพนักงาน</p></div>';
+                return;
+            }
+
+            let html = '<div class="table-responsive"><table class="table table-hover">';
+            html += '<thead><tr><th>#</th><th>ชื่อ</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody>';
+
+            employees.forEach((emp, index) => {
+                const statusBadge = emp.isWorking
+                    ? '<span class="badge bg-success">กำลังทำงาน</span>'
+                    : '<span class="badge bg-secondary">ไม่ได้ทำงาน</span>';
+
+                html += `<tr>
+                    <td>${index + 1}</td>
+                    <td><strong>${emp.name}</strong></td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteEmployee('${emp.name.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            });
+
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function filterEmployeeList() {
+            const search = document.getElementById('employeeSearchInput').value.toLowerCase();
+            const filtered = allEmployees.filter(emp => emp.name.toLowerCase().includes(search));
+            renderEmployeeList(filtered);
+        }
+
+        async function showAddEmployeeModal() {
+            const { value: name } = await Swal.fire({
+                title: 'เพิ่มพนักงานใหม่',
+                input: 'text',
+                inputLabel: 'ชื่อพนักงาน',
+                inputPlaceholder: 'กรอกชื่อพนักงาน',
+                showCancelButton: true,
+                confirmButtonText: 'เพิ่ม',
+                cancelButtonText: 'ยกเลิก',
+                inputValidator: (value) => {
+                    if (!value || !value.trim()) return 'กรุณากรอกชื่อพนักงาน';
+                }
+            });
+
+            if (name) {
+                try {
+                    const response = await makeApiCall(`${API_BASE_URL}/api/admin/employees`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: name.trim() })
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        Swal.fire('สำเร็จ!', result.message, 'success');
+                        loadEmployees();
+                    } else {
+                        Swal.fire('ผิดพลาด', result.error, 'error');
+                    }
+                } catch (error) {
+                    Swal.fire('ผิดพลาด', error.message, 'error');
+                }
+            }
+        }
+
+        async function deleteEmployee(name) {
+            const confirm = await Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: `ต้องการลบพนักงาน "${name}" หรือไม่?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (confirm.isConfirmed) {
+                try {
+                    const response = await makeApiCall(`${API_BASE_URL}/api/admin/employees/${encodeURIComponent(name)}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        Swal.fire('สำเร็จ!', result.message, 'success');
+                        loadEmployees();
+                        loadStats();
+                    } else {
+                        Swal.fire('ผิดพลาด', result.error, 'error');
+                    }
+                } catch (error) {
+                    Swal.fire('ผิดพลาด', error.message, 'error');
+                }
+            }
+        }
+
+        // ========== 🆕 Manual Clock Functions ==========
+
+        function getSelectedManualEmployees() {
+            const select = document.getElementById('manualEmployee');
+            return Array.from(select.selectedOptions)
+                .map(opt => opt.value)
+                .filter(Boolean);
+        }
+
+        async function manualClockIn() {
+            const employees = getSelectedManualEmployees();
+            const date = document.getElementById('manualDate').value;
+            const time = document.getElementById('manualTime').value;
+            const note = document.getElementById('manualNote').value;
+
+            if (!employees.length || !date || !time) {
+                Swal.fire('ผิดพลาด', 'กรุณาเลือกพนักงาน (เลือกได้หลายคน) พร้อมระบุวันที่และเวลา', 'error');
+                return;
+            }
+
+            try {
+                const response = await makeApiCall(`${API_BASE_URL}/api/admin/manual-clockin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ employees, date, time, note })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    const errors = result.errors?.length ? `\nข้อผิดพลาด: ${result.errors.join('\n')}` : '';
+                    Swal.fire(result.partial ? 'สำเร็จบางส่วน' : 'สำเร็จ!', (result.message || '') + errors, result.partial ? 'info' : 'success');
+                    loadStats();
+                    loadEmployees();
+                    // เคลียร์ฟอร์ม
+                    document.getElementById('manualNote').value = '';
+                } else {
+                    const errorText = result.error || (result.errors && result.errors.join('\n')) || 'ไม่สามารถลงเวลาเข้าได้';
+                    Swal.fire('ผิดพลาด', errorText, 'error');
+                }
+            } catch (error) {
+                Swal.fire('ผิดพลาด', error.message, 'error');
+            }
+        }
+
+        async function manualClockOut() {
+            const employees = getSelectedManualEmployees();
+            const date = document.getElementById('manualDate').value;
+            const time = document.getElementById('manualTime').value;
+            const note = document.getElementById('manualNote').value;
+
+            if (!employees.length || !date || !time) {
+                Swal.fire('ผิดพลาด', 'กรุณาเลือกพนักงาน (เลือกได้หลายคน) พร้อมระบุวันที่และเวลา', 'error');
+                return;
+            }
+
+            try {
+                const response = await makeApiCall(`${API_BASE_URL}/api/admin/manual-clockout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ employees, date, time, note })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    const errors = result.errors?.length ? `\nข้อผิดพลาด: ${result.errors.join('\n')}` : '';
+                    Swal.fire(result.partial ? 'สำเร็จบางส่วน' : 'สำเร็จ!', (result.message || '') + errors, result.partial ? 'info' : 'success');
+                    loadStats();
+                    loadEmployees();
+                    document.getElementById('manualNote').value = '';
+                } else {
+                    const errorText = result.error || (result.errors && result.errors.join('\n')) || 'ไม่สามารถลงเวลาออกได้';
+                    Swal.fire('ผิดพลาด', errorText, 'error');
+                }
+            } catch (error) {
+                Swal.fire('ผิดพลาด', error.message, 'error');
+            }
+        }
+
+        // 🆕 ========== Edit Time Functions ==========
+
+        let currentEditRecordId = null;
+
+        async function showEditTimeModal(employeeName, clockInTime) {
+            const modal = new bootstrap.Modal(document.getElementById('editTimeModal'));
+
+            document.getElementById('editEmployeeName').value = employeeName;
+            document.getElementById('editNote').value = '';
+
+            // 🆕 แปลงวันที่เป็น DD/MM/YYYY ให้ตรงกับ format ใน database
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const todayDDMMYYYY = `${day}/${month}/${year}`;
+
+            // ใช้ YYYY-MM-DD สำหรับ input type="date"
+            const todayForInput = now.toISOString().split('T')[0];
+            document.getElementById('editClockInDate').value = todayForInput;
+
+            // แปลง HH:mm:ss เป็น HH:mm สำหรับ time input
+            const timePart = clockInTime.split(':').slice(0, 2).join(':');
+            document.getElementById('editClockInTime').value = timePart;
+
+            // clock out ปล่อยว่าง (ถ้าต้องการแก้ไข)
+            document.getElementById('editClockOutDate').value = todayForInput;
+            document.getElementById('editClockOutTime').value = '';
+
+            // ดึง record id โดยค้นหาจากชื่อและวันที่ (ใช้ DD/MM/YYYY)
+            try {
+                const response = await makeApiCall(`${API_BASE_URL}/api/admin/time-records/${encodeURIComponent(employeeName)}/${encodeURIComponent(todayDDMMYYYY)}`);
+                const result = await response.json();
+
+                if (result.success && result.data.length > 0) {
+                    const record = result.data[0]; // ใช้รายการแรก
+                    currentEditRecordId = record.id;
+
+                    // เติมข้อมูลเดิม
+                    if (record.clock_in) {
+                        const [datePart, timePartFull] = record.clock_in.split(' ');
+                        if (datePart) {
+                            const [d, m, y] = datePart.split('/');
+                            document.getElementById('editClockInDate').value = `${y}-${m}-${d}`;
+                        }
+                        if (timePartFull) {
+                            document.getElementById('editClockInTime').value = timePartFull.slice(0, 5);
+                        }
+                    }
+
+                    if (record.clock_out) {
+                        const [datePart, timePartFull] = record.clock_out.split(' ');
+                        if (datePart) {
+                            const [d, m, y] = datePart.split('/');
+                            document.getElementById('editClockOutDate').value = `${y}-${m}-${d}`;
+                        }
+                        if (timePartFull) {
+                            document.getElementById('editClockOutTime').value = timePartFull.slice(0, 5);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching record:', error);
+            }
+
+            modal.show();
+        }
+
+        async function saveTimeEdit() {
+            const employeeName = document.getElementById('editEmployeeName').value;
+            const clockInDate = document.getElementById('editClockInDate').value;
+            const clockInTime = document.getElementById('editClockInTime').value;
+            const clockOutDate = document.getElementById('editClockOutDate').value;
+            const clockOutTime = document.getElementById('editClockOutTime').value;
+            const note = document.getElementById('editNote').value;
+
+            if (!currentEditRecordId) {
+                Swal.fire('ผิดพลาด', 'ไม่พบรายการที่ต้องการแก้ไข', 'error');
+                return;
+            }
+
+            const data = {
+                employeeName,
+                clockIn: clockInDate && clockInTime ? { date: clockInDate, time: clockInTime } : null,
+                clockOut: clockOutDate && clockOutTime ? { date: clockOutDate, time: clockOutTime } : null,
+                note
+            };
+
+            try {
+                const response = await makeApiCall(`${API_BASE_URL}/api/admin/time-records/${currentEditRecordId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    Swal.fire('สำเร็จ!', result.message, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('editTimeModal')).hide();
+                    loadStats();
+                    currentEditRecordId = null;
+                } else {
+                    Swal.fire('ผิดพลาด', result.error, 'error');
+                }
+            } catch (error) {
+                Swal.fire('ผิดพลาด', error.message, 'error');
+            }
+        }
+
+        // 🆕 ========== Historical Records Functions ==========
+
+        async function searchHistoricalRecords() {
+            const employee = document.getElementById('historyEmployee').value;
+            const date = document.getElementById('historyDate').value;
+
+            if (!date) {
+                Swal.fire('ผิดพลาด', 'กรุณาเลือกวันที่', 'error');
+                return;
+            }
+
+            // แปลง YYYY-MM-DD เป็น DD/MM/YYYY
+            const [y, m, d] = date.split('-');
+            const dateDDMMYYYY = `${d}/${m}/${y}`;
+
+            try {
+                let url = `${API_BASE_URL}/api/admin/time-records-by-date/${encodeURIComponent(dateDDMMYYYY)}`;
+                if (employee) {
+                    url += `?employee=${encodeURIComponent(employee)}`;
+                }
+
+                const response = await makeApiCall(url);
+                const result = await response.json();
+
+                const container = document.getElementById('historicalRecordsResult');
+                container.style.display = 'block';
+
+                if (result.success && result.data.length > 0) {
+                    let html = `
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="alert alert-info mb-0 flex-grow-1 me-3">
+                                <strong>พบ ${result.data.length} รายการ</strong> สำหรับวันที่ ${d}/${m}/${y}
+                            </div>
+                            <div>
+                                <button class="btn btn-outline-primary btn-sm me-2" onclick="selectAllHistoricalRecords()">
+                                    <i class="fas fa-check-square"></i> เลือกทั้งหมด
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteSelectedRecords()">
+                                    <i class="fas fa-trash"></i> ลบที่เลือก (<span id="selectedCount">0</span>)
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="historicalRecordsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px;">
+                                            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+                                        </th>
+                                        <th>ชื่อพนักงาน</th>
+                                        <th>เวลาเข้า</th>
+                                        <th>เวลาออก</th>
+                                        <th>ชั่วโมงทำงาน</th>
+                                        <th>หมายเหตุ</th>
+                                        <th>การกระทำ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+                    result.data.forEach(record => {
+                        const clockInTime = record.clock_in ? record.clock_in.split(' ')[1] || record.clock_in : '-';
+                        const clockOutTime = record.clock_out ? record.clock_out.split(' ')[1] || record.clock_out : '-';
+                        // Escape single quotes for JS
+                        const safeNote = (record.note || '').replace(/'/g, "\\'");
+                        const safeClockIn = (record.clock_in || '').replace(/'/g, "\\'");
+                        const safeClockOut = (record.clock_out || '').replace(/'/g, "\\'");
+                        html += `
+                            <tr data-record-id="${record.id}">
+                                <td>
+                                    <input type="checkbox" class="record-checkbox" value="${record.id}" 
+                                           data-employee="${record.employee_name}" onchange="updateSelectedCount()">
+                                </td>
+                                <td><strong>${record.employee_name}</strong></td>
+                                <td>${clockInTime}</td>
+                                <td>${clockOutTime}</td>
+                                <td>${record.working_hours ? parseFloat(record.working_hours).toFixed(1) + ' ชม.' : '-'}</td>
+                                <td>${record.note || '-'}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning" onclick="editHistoricalRecord(${record.id}, '${record.employee_name}', '${safeClockIn}', '${safeClockOut}', '${safeNote}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteHistoricalRecord(${record.id}, '${record.employee_name}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle"></i> ไม่พบรายการสำหรับวันที่ ${d}/${m}/${y}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                Swal.fire('ผิดพลาด', error.message, 'error');
+            }
+        }
+
+        function editHistoricalRecord(recordId, employeeName, clockIn, clockOut, note) {
+            currentEditRecordId = recordId;
+            document.getElementById('editEmployeeName').value = employeeName;
+            document.getElementById('editNote').value = note;
+
+            // Parse clock_in
+            if (clockIn) {
+                const [datePart, timePart] = clockIn.split(' ');
+                if (datePart) {
+                    const [d, m, y] = datePart.split('/');
+                    document.getElementById('editClockInDate').value = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+                }
+                if (timePart) {
+                    document.getElementById('editClockInTime').value = timePart.slice(0, 5);
+                }
+            }
+
+            // Parse clock_out
+            if (clockOut) {
+                const [datePart, timePart] = clockOut.split(' ');
+                if (datePart) {
+                    const [d, m, y] = datePart.split('/');
+                    document.getElementById('editClockOutDate').value = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+                }
+                if (timePart) {
+                    document.getElementById('editClockOutTime').value = timePart.slice(0, 5);
+                }
+            } else {
+                document.getElementById('editClockOutDate').value = '';
+                document.getElementById('editClockOutTime').value = '';
+            }
+
+            new bootstrap.Modal(document.getElementById('editTimeModal')).show();
+        }
+
+        async function deleteHistoricalRecord(recordId, employeeName) {
+            const confirm = await Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: `ต้องการลบรายการของ "${employeeName}" หรือไม่?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (confirm.isConfirmed) {
+                try {
+                    const response = await makeApiCall(`${API_BASE_URL}/api/admin/time-records/${recordId}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        Swal.fire('สำเร็จ!', result.message, 'success');
+                        searchHistoricalRecords(); // รีโหลดผลลัพธ์
+                        loadStats();
+                    } else {
+                        Swal.fire('ผิดพลาด', result.error, 'error');
+                    }
+                } catch (error) {
+                    Swal.fire('ผิดพลาด', error.message, 'error');
+                }
+            }
+        }
+
+        // 🆕 ========== Bulk Selection Functions ==========
+
+        function toggleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.record-checkbox');
+            checkboxes.forEach(cb => cb.checked = checkbox.checked);
+            updateSelectedCount();
+        }
+
+        function selectAllHistoricalRecords() {
+            const selectAllCb = document.getElementById('selectAllCheckbox');
+            if (selectAllCb) {
+                selectAllCb.checked = true;
+                toggleSelectAll(selectAllCb);
+            }
+        }
+
+        function updateSelectedCount() {
+            const checked = document.querySelectorAll('.record-checkbox:checked');
+            const countSpan = document.getElementById('selectedCount');
+            if (countSpan) {
+                countSpan.textContent = checked.length;
+            }
+        }
+
+        function getSelectedRecordIds() {
+            const checked = document.querySelectorAll('.record-checkbox:checked');
+            return Array.from(checked).map(cb => parseInt(cb.value));
+        }
+
+        async function deleteSelectedRecords() {
+            const selectedIds = getSelectedRecordIds();
+
+            if (selectedIds.length === 0) {
+                Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายการที่ต้องการลบ', 'warning');
+                return;
+            }
+
+            const confirm = await Swal.fire({
+                title: 'ยืนยันการลบหลายรายการ?',
+                html: `ต้องการลบ <strong>${selectedIds.length} รายการ</strong> ที่เลือกหรือไม่?<br><small class="text-danger">การกระทำนี้ไม่สามารถย้อนกลับได้</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                confirmButtonText: `ลบ ${selectedIds.length} รายการ`,
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (confirm.isConfirmed) {
+                Swal.fire({
+                    title: 'กำลังลบรายการ...',
+                    html: `<div class="progress"><div class="progress-bar" id="deleteProgress" style="width: 0%"></div></div>`,
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                let successCount = 0;
+                let errorCount = 0;
+
+                for (let i = 0; i < selectedIds.length; i++) {
+                    try {
+                        const response = await makeApiCall(`${API_BASE_URL}/api/admin/time-records/${selectedIds[i]}`, {
+                            method: 'DELETE'
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            successCount++;
+                        } else {
+                            errorCount++;
+                        }
+                    } catch (error) {
+                        errorCount++;
+                    }
+
+                    // Update progress
+                    const progress = Math.round(((i + 1) / selectedIds.length) * 100);
+                    const progressBar = document.getElementById('deleteProgress');
+                    if (progressBar) progressBar.style.width = `${progress}%`;
+                }
+
+                Swal.fire({
+                    title: 'ลบเสร็จสิ้น',
+                    html: `สำเร็จ: <strong class="text-success">${successCount}</strong> รายการ<br>ผิดพลาด: <strong class="text-danger">${errorCount}</strong> รายการ`,
+                    icon: errorCount > 0 ? 'warning' : 'success'
+                });
+
+                searchHistoricalRecords(); // รีโหลดผลลัพธ์
+                loadStats();
+            }
+        }
+
+        // 🆕 ลบรายการซ้ำ (เหลือ 1 คน/วัน - เก็บเวลาเข้าเร็วสุด)
+        async function removeDuplicateRecords() {
+            const date = document.getElementById('historyDate').value;
+
+            if (!date) {
+                Swal.fire('แจ้งเตือน', 'กรุณาเลือกวันที่ที่ต้องการลบรายการซ้ำ', 'warning');
+                return;
+            }
+
+            // แปลง YYYY-MM-DD เป็น DD/MM/YYYY
+            const [y, m, d] = date.split('-');
+            const dateDDMMYYYY = `${d}/${m}/${y}`;
+
+            // ดึงข้อมูลทั้งหมดของวันนี้
+            Swal.fire({
+                title: 'กำลังวิเคราะห์ข้อมูล...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                const response = await makeApiCall(`${API_BASE_URL}/api/admin/time-records-by-date/${encodeURIComponent(dateDDMMYYYY)}`);
+                const result = await response.json();
+
+                if (!result.success || result.data.length === 0) {
+                    Swal.fire('แจ้งเตือน', `ไม่พบรายการสำหรับวันที่ ${d}/${m}/${y}`, 'info');
+                    return;
+                }
+
+                // จัดกลุ่มตามชื่อพนักงาน
+                const groupedByEmployee = {};
+                result.data.forEach(record => {
+                    const name = record.employee_name;
+                    if (!groupedByEmployee[name]) {
+                        groupedByEmployee[name] = [];
+                    }
+                    groupedByEmployee[name].push(record);
+                });
+
+                // หารายการที่ต้องลบ (ทุกรายการยกเว้นรายการแรก - เวลาเข้าเร็วสุด)
+                const recordsToDelete = [];
+                const duplicateInfo = [];
+
+                Object.entries(groupedByEmployee).forEach(([name, records]) => {
+                    if (records.length > 1) {
+                        // เรียงตามเวลาเข้า (เร็วสุดอยู่หน้า)
+                        records.sort((a, b) => {
+                            const timeA = a.clock_in ? a.clock_in.split(' ')[1] || '99:99:99' : '99:99:99';
+                            const timeB = b.clock_in ? b.clock_in.split(' ')[1] || '99:99:99' : '99:99:99';
+                            return timeA.localeCompare(timeB);
+                        });
+
+                        // เก็บรายการแรกไว้ ลบที่เหลือ
+                        for (let i = 1; i < records.length; i++) {
+                            recordsToDelete.push(records[i].id);
+                        }
+                        duplicateInfo.push(`${name} (${records.length} รายการ → เหลือ 1)`);
+                    }
+                });
+
+                Swal.close();
+
+                if (recordsToDelete.length === 0) {
+                    Swal.fire('ไม่มีรายการซ้ำ', `ทุกพนักงานมีเพียง 1 รายการ ไม่ต้องลบ`, 'success');
+                    return;
+                }
+
+                // ยืนยันการลบ
+                const confirm = await Swal.fire({
+                    title: 'พบรายการซ้ำ!',
+                    html: `
+                        <div style="text-align: left; max-height: 300px; overflow-y: auto;">
+                            <p><strong>จะลบ ${recordsToDelete.length} รายการซ้ำ</strong> โดยเหลือรายการที่เข้างานเร็วสุดของแต่ละคน:</p>
+                            <ul>
+                                ${duplicateInfo.map(info => `<li>${info}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    confirmButtonText: `ลบ ${recordsToDelete.length} รายการซ้ำ`,
+                    cancelButtonText: 'ยกเลิก'
+                });
+
+                if (confirm.isConfirmed) {
+                    Swal.fire({
+                        title: 'กำลังลบรายการซ้ำ...',
+                        html: `<div class="progress"><div class="progress-bar bg-warning" id="dupDeleteProgress" style="width: 0%"></div></div>`,
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    let successCount = 0;
+                    let errorCount = 0;
+
+                    for (let i = 0; i < recordsToDelete.length; i++) {
+                        try {
+                            const delResponse = await makeApiCall(`${API_BASE_URL}/api/admin/time-records/${recordsToDelete[i]}`, {
+                                method: 'DELETE'
+                            });
+                            const delResult = await delResponse.json();
+                            if (delResult.success) {
+                                successCount++;
+                            } else {
+                                errorCount++;
+                            }
+                        } catch (error) {
+                            errorCount++;
+                        }
+
+                        const progress = Math.round(((i + 1) / recordsToDelete.length) * 100);
+                        const progressBar = document.getElementById('dupDeleteProgress');
+                        if (progressBar) progressBar.style.width = `${progress}%`;
+                    }
+
+                    Swal.fire({
+                        title: 'ลบรายการซ้ำเสร็จสิ้น',
+                        html: `ลบสำเร็จ: <strong class="text-success">${successCount}</strong> รายการ<br>ผิดพลาด: <strong class="text-danger">${errorCount}</strong> รายการ`,
+                        icon: errorCount > 0 ? 'warning' : 'success'
+                    });
+
+                    searchHistoricalRecords();
+                    loadStats();
+                }
+            } catch (error) {
+                Swal.fire('ผิดพลาด', error.message, 'error');
+            }
+        }
+
+        // ตั้งค่า default date เป็นวันนี้
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('manualDate');
+            if (dateInput) dateInput.value = today;
+
+            // 🆕 ตั้งค่า historyDate เป็นวันนี้
+            const historyDateInput = document.getElementById('historyDate');
+            if (historyDateInput) historyDateInput.value = today;
+        });
+
+        // 🆕 โหลดรายชื่อพนักงานใน historyEmployee dropdown
+        async function loadHistoryEmployeeDropdown() {
+            try {
+                const response = await makeApiCall(`${API_BASE_URL}/api/admin/employees`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const select = document.getElementById('historyEmployee');
+                    // Clear existing options (keep first)
+                    while (select.options.length > 1) {
+                        select.remove(1);
+                    }
+                    // Add employees
+                    result.employees.forEach(emp => {
+                        const option = document.createElement('option');
+                        option.value = emp.name;
+                        option.textContent = emp.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading employees for history:', error);
+            }
+        }
+
+        // เรียกใช้เมื่อโหลดพนักงาน
+        const originalLoadEmployees = typeof loadEmployees === 'function' ? loadEmployees : async () => { };
+        async function loadEmployeesWithHistory() {
+            await originalLoadEmployees();
+            await loadHistoryEmployeeDropdown();
+        }
+
+        // 🆕 ลบรายการเวลา
+        async function deleteTimeRecord(employeeName) {
+            // 🆕 แปลงวันที่เป็น DD/MM/YYYY ให้ตรงกับ format ใน database
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const today = `${day}/${month}/${year}`;
+
+            // ดึง record id
+            try {
+                const response = await makeApiCall(`${API_BASE_URL}/api/admin/time-records/${encodeURIComponent(employeeName)}/${encodeURIComponent(today)}`);
+                const result = await response.json();
+
+                if (!result.success || result.data.length === 0) {
+                    Swal.fire('ผิดพลาด', 'ไม่พบรายการที่ต้องการลบ', 'error');
+                    return;
+                }
+
+                const recordId = result.data[0].id;
+
+                // ยืนยันการลบ
+                const confirm = await Swal.fire({
+                    title: 'ยืนยันการลบ?',
+                    text: `ต้องการลบรายการเวลาของ "${employeeName}" หรือไม่?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    confirmButtonText: 'ลบ',
+                    cancelButtonText: 'ยกเลิก'
+                });
+
+                if (confirm.isConfirmed) {
+                    const deleteResponse = await makeApiCall(`${API_BASE_URL}/api/admin/time-records/${recordId}`, {
+                        method: 'DELETE'
+                    });
+                    const deleteResult = await deleteResponse.json();
+
+                    if (deleteResult.success) {
+                        await Swal.fire('สำเร็จ!', deleteResult.message, 'success');
+
+                        // 🆕 รีโหลด stats และ Modal content
+                        loadStats();
+
+                        // 🆕 รีโหลด Modal content แทนการปิด
+                        const currentModalType = document.getElementById('modalTitle').getAttribute('data-type');
+                        if (currentModalType) {
+                            showDetailModal(currentModalType);
+                        } else {
+                            // ถ้าไม่มี type ให้ปิด modal
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('statsDetailModal'));
+                            if (modal) modal.hide();
+                        }
+                    } else {
+                        Swal.fire('ผิดพลาด', deleteResult.error, 'error');
+                    }
+                }
+            } catch (error) {
+                Swal.fire('ผิดพลาด', error.message, 'error');
+            }
+        }
+
+        // ฟังก์ชันจัดการเวลาให้แสดงเป็นเวลาไทย
+        function formatThaiTime(timeString) {
+            if (!timeString) return '-';
+
+            try {
+                // ถ้าเป็นรูปแบบ HH:mm ที่ส่งมาจาก server แล้ว
+                if (typeof timeString === 'string' && timeString.match(/^\d{2}:\d{2}$/)) {
+                    return timeString;
+                }
+
+                // ถ้าเป็นรูปแบบ 'YYYY-MM-DD HH:mm:ss' (จาก moment)
+                if (typeof timeString === 'string' && timeString.includes(' ') && timeString.length === 19) {
+                    const timePart = timeString.split(' ')[1];
+                    return timePart.substring(0, 5); // เอาแค่ HH:mm
+                }
+
+                // ถ้ามี ' น.' ต่อท้ายอยู่แล้ว
+                if (timeString.includes(' น.')) {
+                    return timeString;
+                }
+
+                // ลองแปลงเป็น Date object
+                const date = new Date(timeString);
+                if (!isNaN(date.getTime())) {
+                    return date.toLocaleTimeString('th-TH', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZone: 'Asia/Bangkok'
+                    });
+                }
+
+                // ถ้าเป็น Date object
+                if (timeString instanceof Date) {
+                    return timeString.toLocaleTimeString('th-TH', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZone: 'Asia/Bangkok'
+                    });
+                }
+
+                return timeString;
+            } catch (error) {
+                console.error('Error formatting time:', error);
+                return timeString || '-';
+            }
+        }
+
+        // ฟังก์ชันจัดการวันที่เป็นไทย
+        function formatThaiDate(dateString) {
+            if (!dateString) return '';
+
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return dateString;
+
+                return date.toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    timeZone: 'Asia/Bangkok'
+                });
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return dateString;
+            }
+        }        // โหลดรายชื่อพนักงานที่กำลังทำงาน
+        let allWorkingEmployees = []; // เก็บข้อมูลพนักงานทั้งหมด
+        let filteredEmployees = []; // เก็บข้อมูลหลังกรอง
+        let currentPage = 1;
+        let itemsPerPageValue = 30;
+
+        function loadWorkingEmployees(employees) {
+            allWorkingEmployees = [...employees];
+            filteredEmployees = [...employees];
+
+            updateEmployeeCount();
+            displayEmployees();
+        }
+
+        function updateEmployeeCount() {
+            document.getElementById('totalCount').textContent = allWorkingEmployees.length;
+        }
+
+        function displayEmployees() {
+            const container = document.getElementById('workingEmployeesList');
+
+            if (filteredEmployees.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-user-clock"></i>
+                        <p>ไม่มีพนักงานที่กำลังทำงานในขณะนี้</p>
+                    </div>
+                `;
+                document.getElementById('displayedCount').textContent = '0';
+                document.getElementById('employeePagination').innerHTML = '';
+                return;
+            }
+
+            // คำนวณ pagination
+            const startIndex = (currentPage - 1) * itemsPerPageValue;
+            const endIndex = itemsPerPageValue === 'all' ? filteredEmployees.length : startIndex + itemsPerPageValue;
+            const currentEmployees = filteredEmployees.slice(startIndex, endIndex);
+
+            // แสดงรายการพนักงาน
+            const html = currentEmployees.map(emp => {
+                const clockInTime = formatThaiTime(emp.clockIn);
+
+                return `
+                    <div class="employee-item">
+                        <div class="employee-info">
+                            <div class="employee-name">${emp.name}</div>
+                            <div class="employee-time">
+                                <i class="fas fa-clock"></i>
+                                เข้างาน: ${clockInTime} | ทำงานแล้ว: ${emp.workingHours}
+                            </div>
+                        </div>
+                        <div class="status-badge">
+                            <i class="fas fa-circle"></i>
+                            ทำงาน
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+
+            // อัปเดตจำนวนที่แสดง
+            document.getElementById('displayedCount').textContent = currentEmployees.length;
+
+            // สร้าง pagination
+            if (itemsPerPageValue !== 'all') {
+                generatePagination();
+            } else {
+                document.getElementById('employeePagination').innerHTML = '';
+            }
+        }
+
+        function generatePagination() {
+            const totalPages = Math.ceil(filteredEmployees.length / itemsPerPageValue);
+            const paginationContainer = document.getElementById('employeePagination');
+
+            if (totalPages <= 1) {
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            let html = '<nav><ul class="pagination">';
+
+            // Previous button
+            html += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+            `;
+
+            // Page numbers
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+
+            if (startPage > 1) {
+                html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage(1)">1</a></li>`;
+                if (startPage > 2) {
+                    html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                html += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                    </li>
+                `;
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+                html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage(${totalPages})">${totalPages}</a></li>`;
+            }
+
+            // Next button
+            html += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+
+            html += '</ul></nav>';
+            paginationContainer.innerHTML = html;
+        }
+
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredEmployees.length / itemsPerPageValue);
+            if (page < 1 || page > totalPages) return;
+
+            currentPage = page;
+            displayEmployees();
+        }
+
+        function changeItemsPerPage() {
+            const select = document.getElementById('itemsPerPage');
+            itemsPerPageValue = select.value === 'all' ? 'all' : parseInt(select.value);
+            currentPage = 1;
+            displayEmployees();
+        }
+
+        function filterEmployees() {
+            const searchTerm = document.getElementById('employeeSearch').value.toLowerCase();
+
+            filteredEmployees = allWorkingEmployees.filter(emp =>
+                emp.name.toLowerCase().includes(searchTerm)
+            );
+
+            currentPage = 1;
+            displayEmployees();
+        }
+
+        function sortEmployees() {
+            const sortBy = document.getElementById('sortBy').value;
+
+            filteredEmployees.sort((a, b) => {
+                switch (sortBy) {
+                    case 'name':
+                        return a.name.localeCompare(b.name, 'th');
+                    case 'clockin':
+                        return a.clockIn.localeCompare(b.clockIn);
+                    case 'workinghours':
+                        const aHours = parseFloat(a.workingHours.replace(' ชม.', ''));
+                        const bHours = parseFloat(b.workingHours.replace(' ชม.', ''));
+                        return bHours - aHours; // เรียงจากมากไปน้อย
+                    default:
+                        return 0;
+                }
+            });
+
+            currentPage = 1;
+            displayEmployees();
+        }
+
+        // ฟังก์ชัน Export
+        async function exportDaily() {
+            const date = document.getElementById('dailyDate').value;
+            if (!date) {
+                Swal.fire({
+                    title: 'โปรดเลือกวันที่',
+                    text: 'กรุณาเลือกวันที่ที่ต้องการสร้างรายงาน',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            // ตรวจสอบวันที่ไม่เกินวันปัจจุบัน
+            const selectedDate = new Date(date);
+            const today = new Date();
+            today.setHours(23, 59, 59, 999); // ให้เลือกได้ถึงวันปัจจุบัน
+
+            if (selectedDate > today) {
+                Swal.fire({
+                    title: 'วันที่ไม่ถูกต้อง',
+                    text: 'ไม่สามารถสร้างรายงานสำหรับวันที่ในอนาคตได้',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            await downloadReport('daily', { date });
+        }
+        async function exportMonthly() {
+            const month = document.getElementById('monthSelect').value;
+            const year = document.getElementById('yearSelect').value;
+            const format = document.getElementById('reportFormat').value;
+
+            if (!month || !year) {
+                Swal.fire({
+                    title: 'ข้อมูลไม่ครบถ้วน',
+                    text: 'กรุณาเลือกเดือนและปีที่ต้องการสร้างรายงาน',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            // ตรวจสอบไม่ให้เลือกเดือนในอนาคต
+            const selectedDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+            const today = new Date();
+            const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+            if (selectedDate > currentMonth) {
+                Swal.fire({
+                    title: 'เดือน/ปี ไม่ถูกต้อง',
+                    text: 'ไม่สามารถสร้างรายงานสำหรับเดือนในอนาคตได้',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            // ส่ง format parameter ไปใน query string เพื่อให้ backend สร้างรายงานตามรูปแบบที่เลือก
+            await downloadReport('monthly', { month, year, format });
+        }
+
+        async function exportRange() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (!startDate || !endDate) {
+                Swal.fire({
+                    title: 'ข้อมูลไม่ครบถ้วน',
+                    text: 'กรุณาเลือกวันที่เริ่มต้นและวันที่สิ้นสุดที่ต้องการสร้างรายงาน',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            if (startDate > endDate) {
+                Swal.fire({
+                    title: 'วันที่ไม่ถูกต้อง',
+                    text: 'วันที่เริ่มต้นต้องไม่เกินวันที่สิ้นสุด',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            // ตรวจสอบช่วงวันที่ไม่เกิน 366 วัน (1 ปี)
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+            if (diffDays > 366) {
+                Swal.fire({
+                    title: 'ช่วงวันที่มากเกินไป',
+                    text: 'กรุณาเลือกช่วงวันที่ไม่เกิน 1 ปี เพื่อประสิทธิภาพในการสร้างรายงาน',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            // ตรวจสอบวันที่ไม่เกินวันปัจจุบัน
+            const today = new Date();
+            today.setHours(23, 59, 59, 999);
+
+            if (end > today) {
+                Swal.fire({
+                    title: 'วันที่ไม่ถูกต้อง',
+                    text: 'ไม่สามารถสร้างรายงานสำหรับวันที่ในอนาคตได้',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            await downloadReport('range', { startDate, endDate });
+        }
+
+        // ดาวน์โหลดรายงาน
+        async function downloadReport(type, params) {
+            try {
+                // แสดง loading พร้อมข้อมูลที่กำลังประมวลผล
+                const loadingTitle = getLoadingTitle(type, params);
+                Swal.fire({
+                    title: 'กำลังสร้างรายงาน...',
+                    html: `${loadingTitle}<br><small class="text-muted">โปรดรอสักครู่ ระบบกำลังดึงข้อมูลและสร้างไฟล์ Excel</small>`,
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const token = localStorage.getItem('adminToken');
+                if (!token) {
+                    throw new Error('ไม่พบ Token การเข้าสู่ระบบ');
+                }
+
+                const queryString = new URLSearchParams(params).toString();
+
+                const response = await makeApiCall(`${API_BASE_URL}/api/admin/export/${type}?${queryString}`);
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                // ตรวจสอบ Content-Type
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+                    throw new Error('ไฟล์ที่ได้รับไม่ใช่ไฟล์ Excel ที่ถูกต้อง');
+                }
+
+                // ดาวน์โหลดไฟล์
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+
+                // ตั้งชื่อไฟล์
+                const filename = getFilename(type, params);
+                a.download = filename;
+
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                // แสดงผลสำเร็จพร้อมรายละเอียด
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ส่งออกรายงานสำเร็จ!',
+                    html: getSuccessMessage(type, params, filename),
+                    timer: 4000,
+                    showConfirmButton: true,
+                    confirmButtonText: 'ตกลง'
+                });
+
+            } catch (error) {
+                console.error('Export error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาดในการส่งออกรายงาน',
+                    html: `
+                        <div style="text-align: left;">
+                            <p><strong>รายละเอียดข้อผิดพลาด:</strong></p>
+                            <p class="text-danger">${error.message}</p>
+                            <hr>
+                            <p><strong>แนวทางแก้ไข:</strong></p>
+                            <ul>
+                                <li>ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</li>
+                                <li>ลองเข้าสู่ระบบใหม่</li>
+                                <li>ตรวจสอบว่าข้อมูลในช่วงที่เลือกมีอยู่จริง</li>
+                                <li>ลองเลือกช่วงวันที่ที่น้อยกว่า</li>
+                            </ul>
+                        </div>
+                    `,
+                    showConfirmButton: true,
+                    confirmButtonText: 'ตกลง'
+                });
+            }
+        }
+
+        // ฟังก์ชันช่วยเหลือสำหรับ Export
+        function getLoadingTitle(type, params) {
+            switch (type) {
+                case 'daily':
+                    return `กำลังสร้างรายงานรายวัน: ${formatDateThai(params.date)}`;
+                case 'monthly':
+                    const monthNames = [
+                        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+                    ];
+                    return `กำลังสร้างรายงานรายเดือน: ${monthNames[params.month - 1]} ${parseInt(params.year) + 543}`;
+                case 'range':
+                    return `กำลังสร้างรายงานช่วงวันที่: ${formatDateThai(params.startDate)} - ${formatDateThai(params.endDate)}`;
+                default:
+                    return 'กำลังสร้างรายงาน';
+            }
+        }
+
+        function getSuccessMessage(type, params, filename) {
+            const details = getReportDetails(type, params);
+            return `
+                <div style="text-align: left;">
+                    <p><strong>ไฟล์:</strong> ${filename}</p>
+                    <p><strong>ประเภทรายงาน:</strong> ${details.title}</p>
+                    <p><strong>ช่วงข้อมูล:</strong> ${details.period}</p>
+                    <hr>
+                    <p><strong>คุณสมบัติรายงาน:</strong></p>
+                    <ul>
+                        <li>ข้อมูลเวลาเข้า-ออกงาน</li>
+                        <li>การคำนวณชั่วโมงทำงาน</li>
+                        <li>สถิติการทำงาน</li>
+                        <li>เน้นสีแยกแยะสถานะต่างๆ</li>
+                        <li>ส่วนหัวและส่วนท้ายรายงาน</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function getReportDetails(type, params) {
+            switch (type) {
+                case 'daily':
+                    return {
+                        title: 'รายงานรายวัน',
+                        period: formatDateThai(params.date)
+                    };
+                case 'monthly':
+                    const monthNames = [
+                        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+                    ];
+                    return {
+                        title: 'รายงานรายเดือน',
+                        period: `${monthNames[params.month - 1]} ${parseInt(params.year) + 543}`
+                    };
+                case 'range':
+                    return {
+                        title: 'รายงานช่วงวันที่',
+                        period: `${formatDateThai(params.startDate)} ถึง ${formatDateThai(params.endDate)}`
+                    };
+                default:
+                    return { title: 'รายงาน', period: 'ไม่ระบุ' };
+            }
+        }
+
+        function formatDateThai(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                timeZone: 'Asia/Bangkok'
+            });
+        }
+
+        // สร้างชื่อไฟล์
+        function getFilename(type, params) {
+            const now = new Date();
+            const thaiDate = now.toLocaleDateString('th-TH', {
+                timeZone: 'Asia/Bangkok',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            }).replace(/\//g, '');
+            const thaiTime = now.toLocaleTimeString('th-TH', {
+                timeZone: 'Asia/Bangkok',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).replace(/:/g, '');
+
+            const timestamp = `${thaiDate}_${thaiTime}`;
+
+            switch (type) {
+                case 'daily':
+                    const dailyDate = new Date(params.date).toLocaleDateString('th-TH', {
+                        timeZone: 'Asia/Bangkok',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    }).replace(/\//g, '');
+                    return `รายงานรายวัน_${dailyDate}_${timestamp}.xlsx`;
+
+                case 'monthly':
+                    const monthNames = [
+                        'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+                        'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
+                    ];
+                    const yearBE = parseInt(params.year) + 543;
+                    const formatSuffix = params.format === 'detailed' ? '_แบ่งวันชัดเจน' : '';
+                    return `รายงานรายเดือน_${monthNames[params.month - 1]}${yearBE}${formatSuffix}_${timestamp}.xlsx`;
+
+                case 'range':
+                    const startDate = new Date(params.startDate).toLocaleDateString('th-TH', {
+                        timeZone: 'Asia/Bangkok',
+                        month: '2-digit',
+                        day: '2-digit'
+                    }).replace(/\//g, '');
+                    const endDate = new Date(params.endDate).toLocaleDateString('th-TH', {
+                        timeZone: 'Asia/Bangkok',
+                        month: '2-digit',
+                        day: '2-digit'
+                    }).replace(/\//g, '');
+                    return `รายงานช่วงวันที่_${startDate}-${endDate}_${timestamp}.xlsx`;
+
+                default:
+                    return `รายงาน_${timestamp}.xlsx`;
+            }
+        }
+
+        // ออกจากระบบ
+        function logout() {
+            Swal.fire({
+                title: 'ออกจากระบบ?',
+                text: 'คุณต้องการออกจากระบบใช่หรือไม่?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'ออกจากระบบ',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#dc3545'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // ล้าง token refresh timeout
+                    if (tokenRefreshTimeout) {
+                        clearTimeout(tokenRefreshTimeout);
+                        tokenRefreshTimeout = null;
+                    }
+
+                    // ล้างข้อมูลการล็อกอิน
+                    localStorage.removeItem('adminToken');
+                    localStorage.removeItem('adminUser');
+
+                    // redirect ไปหน้า login
+                    window.location.href = '/admin/login';
+                }
+            });
+        }          // เตรียมข้อมูลเริ่มต้น
+        function initializePage() {
+            // ใช้เวลาไทยโดยตรง
+            const today = new Date();
+
+            // ตั้งวันที่เริ่มต้นให้เป็นเวลาไทย
+            const dateString = today.toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' }); // YYYY-MM-DD format
+            document.getElementById('dailyDate').value = dateString;
+
+            // ตั้งเดือนและปีปัจจุบันตามเวลาไทย  
+            const thaiMonth = today.toLocaleDateString('th-TH', {
+                month: 'numeric',
+                timeZone: 'Asia/Bangkok'
+            });
+            const thaiYear = today.toLocaleDateString('en-CA', {
+                year: 'numeric',
+                timeZone: 'Asia/Bangkok'
+            });
+
+            document.getElementById('monthSelect').value = parseInt(thaiMonth);
+
+            // สร้างรายการปี
+            const yearSelect = document.getElementById('yearSelect');
+            const currentYear = parseInt(thaiYear); // ใช้ปี ค.ศ. จาก en-CA
+            for (let year = currentYear; year >= currentYear - 5; year--) {
+                const option = document.createElement('option');
+                option.value = year; // เก็บเป็น ค.ศ. สำหรับส่งไป backend
+                option.textContent = (year + 543) + ' (พ.ศ.)'; // แสดงเป็น พ.ศ. ให้ผู้ใช้เห็น
+                if (year === currentYear) option.selected = true;
+                yearSelect.appendChild(option);
+            }
+
+            // ตั้งช่วงวันที่ (สัปดาห์นี้) ตามเวลาไทย
+            const startOfWeek = new Date(dateString);
+            const dayOfWeek = startOfWeek.getDay();
+            startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
+
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+            document.getElementById('startDate').value = startOfWeek.toISOString().split('T')[0];
+            document.getElementById('endDate').value = endOfWeek.toISOString().split('T')[0];
+        }          // ฟังก์ชันอัปเดตเวลาปัจจุบัน
+        function updateCurrentTime() {
+            const now = new Date();
+
+            // ใช้ timezone Bangkok โดยตรง ไม่ต้องบวก 7 ชั่วโมงด้วยตัวเอง
+            const timeString = now.toLocaleTimeString('th-TH', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                timeZone: 'Asia/Bangkok'
+            });
+
+            const dateString = now.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                timeZone: 'Asia/Bangkok'
+            });
+
+            const timeElement = document.getElementById('currentTime');
+            if (timeElement) {
+                timeElement.innerHTML = `<i class="fas fa-clock"></i> ${dateString} ${timeString}`;
+            }
+        }
+
+        // ...existing code...
+
+        // 🆕 Function ซ่อมแซมสถานะ On-Work
+        async function repairOnWorkStatus() {
+            try {
+                const result = await Swal.fire({
+                    title: 'ยืนยันการซ่อมแซมสถานะ?',
+                    text: "ระบบจะค้นหาคนที่ Clock In วันนี้แต่วันนี้ยังไม่มีสถานะทำงาน (หายไป) และกู้คืนกลับมาคืนสถานะ 'กำลังทำงาน'",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ffc107',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'ยืนยัน ซ่อมแซม',
+                    cancelButtonText: 'ยกเลิก'
+                });
+
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'กำลังซ่อมแซม...',
+                        html: 'กรุณารอสักครู่ ระบบกำลังสแกนข้อมูลและ Sync...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading() }
+                    });
+
+                    const response = await makeApiCall('/api/admin/repair-on-work', {
+                        method: 'POST'
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        let message = `พบรายการตกหล่นทั้งหมด: ${data.totalOpen} รายการ<br>`;
+                        if (data.repairedCount > 0) {
+                            message += `✅ กู้คืนสำเร็จ: <b>${data.repairedCount}</b> คน<br>`;
+                            message += `<small class="text-muted">รายชื่อ: ${data.repairedEmployees.join(', ')}</small>`;
+                        } else {
+                            message += `✨ ไม่พบรายการที่ต้องซ่อมแซม (สถานะถูกต้องครบถ้วน)`;
+                        }
+
+                        Swal.fire({
+                            title: 'ดำเนินการเสร็จสิ้น',
+                            html: message,
+                            icon: 'success'
+                        }).then(() => {
+                            loadStats(); // Reload stats/list to show repaired employees
+                        });
+                    } else {
+                        throw new Error(data.error || 'Unknown error');
+                    }
+                }
+            } catch (error) {
+                console.error('Repair error:', error);
+                Swal.fire({
+                    title: 'เกิดข้อผิดพลาด',
+                    text: error.message,
+                    icon: 'error'
+                });
+            }
+        }
+
+        // เริ่มต้นเมื่อโหลดหน้า
+        document.addEventListener('DOMContentLoaded', function () {
+            if (checkAuth()) {
+                initializePage();
+                loadStats();
+                updateCurrentTime();
+
+                // รีเฟรชข้อมูลทุก 30 วินาที
+                setInterval(loadStats, 30000);
+                // อัปเดตเวลาทุกวินาที
+                setInterval(updateCurrentTime, 1000);
+            }
+
+            // ลงทะเบียน Service Worker สำหรับ PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function (registration) {
+                        console.log('🔧 Service Worker ลงทะเบียนสำเร็จ:', registration.scope);
+
+                        // ตรวจสอบการอัปเดต Service Worker
+                        registration.addEventListener('updatefound', function () {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', function () {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('🔄 มี Service Worker เวอร์ชันใหม่ พร้อมใช้งาน');
+                                }
+                            });
+                        });
+                    })
+                    .catch(function (error) {
+                        console.error('❌ การลงทะเบียน Service Worker ล้มเหลว:', error);
+                    });
+            }
+        });
+    </script>
+</body>
+
+</html>
