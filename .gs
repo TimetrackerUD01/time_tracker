@@ -204,3 +204,17 @@ function jsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
 }
+
+// ========== ทดสอบระบบ ==========
+function testClockIn() {
+  const testData = {
+    employee: 'ทดสอบระบบ',
+    lat: 14.0583,
+    lon: 100.6014,
+    line_name: 'ผู้ทดสอบ',
+    userinfo: 'ทดสอบจาก GSA',
+    timestamp: new Date().toISOString()
+  };
+  
+  return handleClockIn(testData);
+}

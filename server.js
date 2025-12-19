@@ -1353,29 +1353,37 @@ class GoogleSheetsService {
 
   async triggerMapGeneration(action, data) {
     try {
+      console.log(`🔔 triggerMapGeneration called: ${action} for ${data.employee}`);
+
       const gsaWebhookUrl = process.env.GSA_MAP_WEBHOOK_URL;
+      console.log(`🔗 GSA URL: ${gsaWebhookUrl ? 'Configured' : 'NOT CONFIGURED'}`);
+
       if (!gsaWebhookUrl) {
         console.log('⚠️ GSA webhook URL not configured');
         return;
-      } const payload = {
+      }
+
+      const payload = {
         action,
         data,
-        timestamp: moment().tz(CONFIG.TIMEZONE).toISOString() // ใช้เวลาไทย
+        timestamp: moment().tz(CONFIG.TIMEZONE).toISOString()
       };
 
-      await fetch(gsaWebhookUrl, {
+      console.log(`📤 Sending to GSA: ${JSON.stringify(payload).substring(0, 100)}...`);
+
+      const response = await fetch(gsaWebhookUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'X-Webhook-Secret': CONFIG.RENDER.GSA_WEBHOOK_SECRET
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
       });
 
-      console.log(`📍 Map generation triggered for ${action}: ${data.employee}`);
+      const responseText = await response.text();
+      console.log(`📍 GSA Response: ${response.status} - ${responseText.substring(0, 100)}`);
 
     } catch (error) {
-      console.error('Error triggering map generation:', error);
+      console.error('❌ Error triggering map generation:', error.message);
     }
   } formatTime(date) {
     try {
