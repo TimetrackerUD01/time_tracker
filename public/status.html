@@ -505,6 +505,13 @@
                 </div>
             </div>
 
+            <!-- Month Filter for Personal -->
+            <div class="filters" style="margin-bottom: 15px;">
+                <select class="filter-input" id="personalMonthFilter" onchange="loadPersonalData()" style="flex: 1;">
+                    <!-- Options จะถูกเพิ่มโดย JavaScript -->
+                </select>
+            </div>
+
             <div class="section-header">
                 <h2>📋 ประวัติลงเวลา</h2>
             </div>
@@ -777,6 +784,7 @@
                 document.getElementById('registeredAt').textContent = employeeData.registeredAt || '-';
             }
 
+            populateMonthFilter();
             loadPersonalData();
             startAutoRefresh('personal');
         }
@@ -827,8 +835,21 @@
             if (!lineUserId) return;
 
             try {
+                // Get selected month
+                const monthFilter = document.getElementById('personalMonthFilter');
+                const selectedMonth = monthFilter ? monthFilter.value : '';
+
+                // Build query params
+                let statsUrl = `${API_BASE_URL}/api/my/stats?line_user_id=${lineUserId}`;
+                let historyUrl = `${API_BASE_URL}/api/my/history?line_user_id=${lineUserId}&limit=50`;
+
+                if (selectedMonth) {
+                    statsUrl += `&month=${selectedMonth}`;
+                    historyUrl += `&month=${selectedMonth}`;
+                }
+
                 // Load stats
-                const statsRes = await fetch(`${API_BASE_URL}/api/my/stats?line_user_id=${lineUserId}`);
+                const statsRes = await fetch(statsUrl);
                 const statsResult = await statsRes.json();
 
                 if (statsResult.success) {
@@ -838,7 +859,7 @@
                 }
 
                 // Load history
-                const historyRes = await fetch(`${API_BASE_URL}/api/my/history?line_user_id=${lineUserId}&limit=10`);
+                const historyRes = await fetch(historyUrl);
                 const historyResult = await historyRes.json();
 
                 if (historyResult.success) {
@@ -849,6 +870,41 @@
             } catch (error) {
                 console.error('Error loading personal data:', error);
             }
+        }
+
+        // Populate month filter options
+        function populateMonthFilter() {
+            const select = document.getElementById('personalMonthFilter');
+            if (!select) return;
+
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth();
+
+            const thaiMonths = [
+                'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+            ];
+
+            let options = '<option value="">📅 เดือนปัจจุบัน</option>';
+
+            // Add last 12 months
+            for (let i = 0; i < 12; i++) {
+                let month = currentMonth - i;
+                let year = currentYear;
+
+                if (month < 0) {
+                    month += 12;
+                    year -= 1;
+                }
+
+                const value = `${String(month + 1).padStart(2, '0')}/${year}`;
+                const label = `${thaiMonths[month]} ${year + 543}`;
+
+                options += `<option value="${value}">${label}</option>`;
+            }
+
+            select.innerHTML = options;
         }
 
         function renderPersonalHistory(records) {

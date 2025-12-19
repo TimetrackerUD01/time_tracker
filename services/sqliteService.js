@@ -1398,17 +1398,41 @@ class SQLiteService {
     }
 
     // ดึงประวัติส่วนตัว
-    getPersonalHistory(employeeName, limit = 30) {
+    getPersonalHistory(employeeName, limit = 30, month = null) {
         try {
-            const records = this.db.prepare(`
-                SELECT 
-                    id, clock_in, clock_out, working_hours,
-                    location_in_name, location_out_name
-                FROM time_records
-                WHERE employee_name = ?
-                ORDER BY id DESC
-                LIMIT ?
-            `).all(employeeName, limit);
+            let query;
+            let params;
+
+            if (month) {
+                // Filter by month (format: MM/YYYY)
+                const [mm, yyyy] = month.split('/');
+                const monthPattern = `%/${mm}/${yyyy}%`;
+
+                query = `
+                    SELECT 
+                        id, clock_in, clock_out, working_hours,
+                        location_in_name, location_out_name
+                    FROM time_records
+                    WHERE employee_name = ?
+                    AND clock_in LIKE ?
+                    ORDER BY id DESC
+                    LIMIT ?
+                `;
+                params = [employeeName, monthPattern, limit];
+            } else {
+                query = `
+                    SELECT 
+                        id, clock_in, clock_out, working_hours,
+                        location_in_name, location_out_name
+                    FROM time_records
+                    WHERE employee_name = ?
+                    ORDER BY id DESC
+                    LIMIT ?
+                `;
+                params = [employeeName, limit];
+            }
+
+            const records = this.db.prepare(query).all(...params);
 
             return records.map(r => ({
                 id: r.id,

@@ -3000,6 +3000,7 @@ app.get('/api/my/history', (req, res) => {
   try {
     const lineUserId = req.query.line_user_id || req.headers['x-line-userid'];
     const limit = parseInt(req.query.limit) || 30;
+    const month = req.query.month; // format: MM/YYYY
 
     if (!lineUserId) {
       return res.status(401).json({
@@ -3017,7 +3018,7 @@ app.get('/api/my/history', (req, res) => {
       });
     }
 
-    const history = sqliteService.getPersonalHistory(employee.name, limit);
+    const history = sqliteService.getPersonalHistory(employee.name, limit, month);
 
     res.json({
       success: true,
