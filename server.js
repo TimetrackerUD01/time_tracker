@@ -2405,6 +2405,22 @@ app.post('/api/clockin', async (req, res) => {
       employee, userinfo, lat, lon, line_name, line_picture, mock_time
     });
 
+    // ส่ง webhook ไป GSA (ไม่กระทบ response หลัก)
+    if (result?.success) {
+      try {
+        await sheetsService.triggerMapGeneration('clockin', {
+          employee,
+          lat,
+          lon,
+          line_name,
+          userinfo,
+          timestamp: result.time || undefined
+        });
+      } catch (webhookError) {
+        console.error('⚠️ GSA webhook (clockin) failed:', webhookError.message);
+      }
+    }
+
     res.json(result);
 
   } catch (error) {
@@ -2444,6 +2460,22 @@ app.post('/api/clockout', async (req, res) => {
     const result = await sqliteService.clockOut({
       employee, lat, lon, line_name, mock_time
     });
+
+    // ส่ง webhook ไป GSA (ไม่กระทบ response หลัก)
+    if (result?.success) {
+      try {
+        await sheetsService.triggerMapGeneration('clockout', {
+          employee,
+          lat,
+          lon,
+          line_name,
+          timestamp: result.time || undefined,
+          hoursWorked: result.hoursWorked
+        });
+      } catch (webhookError) {
+        console.error('⚠️ GSA webhook (clockout) failed:', webhookError.message);
+      }
+    }
 
     res.json(result);
 
