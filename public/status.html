@@ -586,11 +586,41 @@
 
         async function initLiff() {
             try {
-                // ถ้าเปิดผ่าน LIFF app จะ login มาแล้ว - ไม่ต้อง init ใหม่
-                if (typeof liff !== 'undefined') {
-                    // ตรวจสอบว่า LIFF พร้อมใช้งานหรือยัง
-                    if (liff.isLoggedIn && liff.isLoggedIn()) {
-                        // ถ้า login มาแล้ว (เปิดผ่าน LIFF URL)
+                // ดึง LIFF ID จาก server config
+                const configRes = await fetch(`${API_BASE_URL}/api/config`);
+                if (!configRes.ok) {
+                    console.log('Failed to get config');
+                    showAllMode();
+                    return;
+                }
+
+                const config = await configRes.json();
+                const liffId = config.data?.liffId || config.liffId;
+
+                if (!liffId) {
+                    console.log('No LIFF ID configured');
+                    showAllMode();
+                    return;
+                }
+
+                // Init LIFF ก่อน
+                console.log('Initializing LIFF with ID:', liffId);
+                await liff.init({ liffId: liffId });
+                console.log('LIFF initialized successfully');
+
+                // เช็คว่า login แล้วหรือยัง
+                if (liff.isLoggedIn()) {
+                    console.log('User is logged in');
+
+                    // ดึง profile
+                    try {
+                        lineProfile = await liff.getProfile();
+                        lineUserId = lineProfile.userId;
+                        console.log('LINE Profile:', lineProfile.displayName);
+                        await checkRegistration();
+                    } catch (profileError) {
+                        console.log('Profile error:', profileError);
+                        // ลอง decode token แทน
                         try {
                             const idToken = liff.getDecodedIDToken();
                             if (idToken) {
@@ -602,31 +632,21 @@
                                 lineUserId = idToken.sub;
                                 console.log('LINE Profile (from token):', lineProfile.displayName);
                                 await checkRegistration();
-                                return;
+                            } else {
+                                showAllMode();
                             }
                         } catch (tokenError) {
                             console.log('Token error:', tokenError);
-                        }
-
-                        // ลองดึง profile โดยตรง
-                        try {
-                            lineProfile = await liff.getProfile();
-                            lineUserId = lineProfile.userId;
-                            console.log('LINE Profile (direct):', lineProfile.displayName);
-                            await checkRegistration();
-                            return;
-                        } catch (profileError) {
-                            console.log('Profile error:', profileError);
+                            showAllMode();
                         }
                     }
+                } else {
+                    console.log('User not logged in - showing All mode');
+                    showAllMode();
                 }
 
-                // ถ้าไม่ได้ login หรือไม่มี LIFF - แสดงโหมด All
-                console.log('Not logged in via LIFF - showing All mode');
-                showAllMode();
-
             } catch (error) {
-                console.log('LIFF check error:', error);
+                console.log('LIFF init error:', error);
                 showAllMode();
             }
         }
