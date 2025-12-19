@@ -114,6 +114,27 @@ class SQLiteService {
       )
     `);
 
+        // 🆕 เพิ่ม columns สำหรับ LINE User ID (Personal Dashboard)
+        try {
+            this.db.exec(`ALTER TABLE employees ADD COLUMN line_user_id TEXT UNIQUE`);
+            console.log('✅ Added line_user_id column to employees');
+        } catch (e) { /* Column อาจมีอยู่แล้ว */ }
+
+        try {
+            this.db.exec(`ALTER TABLE employees ADD COLUMN line_name TEXT`);
+            console.log('✅ Added line_name column to employees');
+        } catch (e) { /* Column อาจมีอยู่แล้ว */ }
+
+        try {
+            this.db.exec(`ALTER TABLE employees ADD COLUMN line_picture TEXT`);
+            console.log('✅ Added line_picture column to employees');
+        } catch (e) { /* Column อาจมีอยู่แล้ว */ }
+
+        try {
+            this.db.exec(`ALTER TABLE employees ADD COLUMN registered_at TEXT`);
+            console.log('✅ Added registered_at column to employees');
+        } catch (e) { /* Column อาจมีอยู่แล้ว */ }
+
         // Import initial night shift employees from config (if table is empty)
         this.initNightShiftFromConfig();
 
@@ -1090,7 +1111,7 @@ class SQLiteService {
      */
     getRecentActivity(limit = 30, date = null) {
         const targetDate = date || moment().tz(CONFIG.TIMEZONE).format('DD/MM/YYYY');
-        
+
         // ดึงรายการ clock in ของวันที่กำหนด
         const clockInRecords = this.db.prepare(`
             SELECT 
@@ -1149,27 +1170,27 @@ class SQLiteService {
      */
     getTodaySummary(date = null) {
         const targetDate = date || moment().tz(CONFIG.TIMEZONE).format('DD/MM/YYYY');
-        
+
         // จำนวนพนักงานทั้งหมด
         const totalEmployees = this.db.prepare('SELECT COUNT(*) as count FROM employees').get().count;
-        
+
         // จำนวนคนที่มาวันนี้ (มี clock_in)
         const presentToday = this.db.prepare(`
             SELECT COUNT(DISTINCT employee_name) as count 
             FROM time_records 
             WHERE clock_in LIKE ?
         `).get(`${targetDate}%`).count;
-        
+
         // จำนวนคนที่กำลังทำงาน (ยังไม่ clock out)
         const workingNow = this.db.prepare('SELECT COUNT(*) as count FROM on_work').get().count;
-        
+
         // จำนวนคนที่ clock out แล้ววันนี้
         const clockedOut = this.db.prepare(`
             SELECT COUNT(DISTINCT employee_name) as count 
             FROM time_records 
             WHERE clock_in LIKE ? AND clock_out IS NOT NULL
         `).get(`${targetDate}%`).count;
-        
+
         // จำนวนคนสาย (เข้าหลัง 08:30)
         const lateCount = this.db.prepare(`
             SELECT COUNT(DISTINCT employee_name) as count 
@@ -1199,7 +1220,7 @@ class SQLiteService {
     getActivityByName(name, date = null, limit = 50) {
         const targetDate = date || moment().tz(CONFIG.TIMEZONE).format('DD/MM/YYYY');
         const searchName = `%${name}%`;
-        
+
         const records = this.db.prepare(`
             SELECT 
                 id,
@@ -1227,6 +1248,227 @@ class SQLiteService {
             clockInTime: record.clock_in ? record.clock_in.split(' ')[1] || '' : '',
             clockOutTime: record.clock_out ? record.clock_out.split(' ')[1] || '' : ''
         }));
+    }
+
+    // ========== 🆕 Personal Dashboard Functions ==========
+
+    // ผูก LINE User ID กับพนักงาน
+    linkLineUserId(employeeName, lineUserId, lineName, linePicture) {
+        try {
+            // ตรวจสอบว่า line_user_id นี้ถูกใช้ไปแล้วหรือยัง
+            const existingByLine = this.db.prepare(
+                'SELECT name FROM employees WHERE line_user_id = ?'
+            ).get(lineUserId);
+
+            if (existingByLine) {
+                return {
+                    success: false,
+                    error: `บัญชี LINE นี้ถูกผูกกับ "${existingByLine.name}" แล้ว`
+                };
+            }
+
+            // ตรวจสอบว่าพนักงานคนนี้ผูก LINE ไปแล้วหรือยัง
+            const existingByName = this.db.prepare(
+                'SELECT line_user_id FROM employees WHERE name = ?'
+            ).get(employeeName);
+
+            if (existingByName && existingByName.line_user_id) {
+                return {
+                    success: false,
+                    error: `พนักงาน "${employeeName}" ผูกบัญชี LINE ไว้แล้ว`
+                };
+            }
+
+            // ผูก LINE User ID
+            const registeredAt = moment().tz(CONFIG.TIMEZONE).format('DD/MM/YYYY HH:mm:ss');
+            this.db.prepare(`
+                UPDATE employees 
+                SET line_user_id = ?, line_name = ?, line_picture = ?, registered_at = ?
+                WHERE name = ?
+            `).run(lineUserId, lineName, linePicture, registeredAt, employeeName);
+
+            console.log(`✅ Linked LINE to employee: ${employeeName}`);
+            return { success: true, message: 'ลงทะเบียนสำเร็จ' };
+        } catch (error) {
+            console.error('Error linking LINE:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // ดึงพนักงานจาก LINE User ID
+    getEmployeeByLineUserId(lineUserId) {
+        try {
+            const employee = this.db.prepare(`
+                SELECT id, name, line_user_id, line_name, line_picture, registered_at, created_at
+                FROM employees WHERE line_user_id = ?
+            `).get(lineUserId);
+
+            return employee || null;
+        } catch (error) {
+            console.error('Error getting employee by LINE ID:', error);
+            return null;
+        }
+    }
+
+    // ดึงรายชื่อพนักงานที่ยังไม่ผูก LINE
+    getUnlinkedEmployees() {
+        try {
+            const employees = this.db.prepare(`
+                SELECT id, name, created_at
+                FROM employees 
+                WHERE line_user_id IS NULL OR line_user_id = ''
+                ORDER BY name
+            `).all();
+
+            return employees;
+        } catch (error) {
+            console.error('Error getting unlinked employees:', error);
+            return [];
+        }
+    }
+
+    // ดึงสถิติส่วนตัว
+    getPersonalStats(employeeName, month = null) {
+        try {
+            // ถ้าไม่ระบุเดือน ใช้เดือนปัจจุบัน
+            const targetMonth = month || moment().tz(CONFIG.TIMEZONE).format('MM/YYYY');
+            const [mm, yyyy] = targetMonth.split('/');
+
+            // ดึงข้อมูลทั้งเดือน
+            const records = this.db.prepare(`
+                SELECT clock_in, clock_out, working_hours
+                FROM time_records
+                WHERE employee_name = ?
+                AND clock_in LIKE ?
+                ORDER BY id DESC
+            `).all(employeeName, `%/${mm}/${yyyy}%`);
+
+            // คำนวณสถิติ
+            let workDays = 0;
+            let lateDays = 0;
+            let totalHours = 0;
+
+            records.forEach(record => {
+                workDays++;
+                totalHours += record.working_hours || 0;
+
+                // ตรวจสอบมาสาย (หลัง 08:30)
+                if (record.clock_in) {
+                    const timePart = record.clock_in.split(' ')[1];
+                    if (timePart) {
+                        const [hh, mi] = timePart.split(':').map(Number);
+                        if (hh > 8 || (hh === 8 && mi > 30)) {
+                            lateDays++;
+                        }
+                    }
+                }
+            });
+
+            // คำนวณวันทำงานในเดือน (จันทร์-ศุกร์)
+            const startOfMonth = moment(`01/${mm}/${yyyy}`, 'DD/MM/YYYY').tz(CONFIG.TIMEZONE);
+            const endOfMonth = startOfMonth.clone().endOf('month');
+            const today = moment().tz(CONFIG.TIMEZONE);
+            const checkUntil = today.isBefore(endOfMonth) ? today : endOfMonth;
+
+            let totalWorkDaysInMonth = 0;
+            const current = startOfMonth.clone();
+            while (current.isSameOrBefore(checkUntil, 'day')) {
+                const dayOfWeek = current.day();
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) { // ไม่นับ เสาร์-อาทิตย์
+                    totalWorkDaysInMonth++;
+                }
+                current.add(1, 'day');
+            }
+
+            const absentDays = Math.max(0, totalWorkDaysInMonth - workDays);
+
+            return {
+                employeeName,
+                month: targetMonth,
+                workDays,
+                lateDays,
+                absentDays,
+                totalHours: Math.round(totalHours * 100) / 100,
+                totalWorkDaysInMonth
+            };
+        } catch (error) {
+            console.error('Error getting personal stats:', error);
+            return null;
+        }
+    }
+
+    // ดึงประวัติส่วนตัว
+    getPersonalHistory(employeeName, limit = 30) {
+        try {
+            const records = this.db.prepare(`
+                SELECT 
+                    id, clock_in, clock_out, working_hours,
+                    location_in_name, location_out_name
+                FROM time_records
+                WHERE employee_name = ?
+                ORDER BY id DESC
+                LIMIT ?
+            `).all(employeeName, limit);
+
+            return records.map(r => ({
+                id: r.id,
+                clockIn: r.clock_in,
+                clockOut: r.clock_out,
+                workingHours: r.working_hours,
+                locationIn: r.location_in_name || '',
+                locationOut: r.location_out_name || '',
+                // แยกเวลา
+                clockInTime: r.clock_in ? r.clock_in.split(' ')[1] || '' : '',
+                clockOutTime: r.clock_out ? r.clock_out.split(' ')[1] || '' : '',
+                date: r.clock_in ? r.clock_in.split(' ')[0] || '' : ''
+            }));
+        } catch (error) {
+            console.error('Error getting personal history:', error);
+            return [];
+        }
+    }
+
+    // ยกเลิกการผูก LINE (Admin only)
+    unlinkLineUserId(employeeName) {
+        try {
+            this.db.prepare(`
+                UPDATE employees 
+                SET line_user_id = NULL, line_name = NULL, line_picture = NULL, registered_at = NULL
+                WHERE name = ?
+            `).run(employeeName);
+
+            console.log(`✅ Unlinked LINE from employee: ${employeeName}`);
+            return { success: true, message: `ยกเลิกการเชื่อมต่อ LINE ของ "${employeeName}" สำเร็จ` };
+        } catch (error) {
+            console.error('Error unlinking LINE:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // ดึงรายชื่อพนักงานที่ผูก LINE แล้ว (Admin)
+    getAllLinkedEmployees() {
+        try {
+            const employees = this.db.prepare(`
+                SELECT id, name, line_user_id, line_name, line_picture, registered_at
+                FROM employees
+                ORDER BY 
+                    CASE WHEN line_user_id IS NOT NULL THEN 0 ELSE 1 END,
+                    name
+            `).all();
+
+            return employees.map(e => ({
+                id: e.id,
+                name: e.name,
+                lineUserId: e.line_user_id,
+                lineName: e.line_name,
+                linePicture: e.line_picture,
+                registeredAt: e.registered_at,
+                isLinked: !!e.line_user_id
+            }));
+        } catch (error) {
+            console.error('Error getting linked employees:', error);
+            return [];
+        }
     }
 }
 

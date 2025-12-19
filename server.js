@@ -2837,6 +2837,230 @@ app.delete('/api/admin/night-shift/:name', authenticateAdmin, (req, res) => {
   }
 });
 
+// ========== 🆕 Personal Dashboard APIs ==========
+
+// ดึงรายชื่อพนักงานที่ยังไม่ผูก LINE (สำหรับหน้าลงทะเบียน)
+app.get('/api/employees/unlinked', (req, res) => {
+  try {
+    const employees = sqliteService.getUnlinkedEmployees();
+    res.json({
+      success: true,
+      count: employees.length,
+      data: employees
+    });
+  } catch (error) {
+    console.error('Error getting unlinked employees:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ลงทะเบียนผูก LINE กับพนักงาน
+app.post('/api/register-line', (req, res) => {
+  try {
+    const { employee_name, line_user_id, line_name, line_picture } = req.body;
+
+    if (!employee_name || !line_user_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'กรุณาระบุชื่อพนักงานและ LINE User ID'
+      });
+    }
+
+    const result = sqliteService.linkLineUserId(
+      employee_name,
+      line_user_id,
+      line_name || '',
+      line_picture || ''
+    );
+
+    if (result.success) {
+      res.json(result);
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    console.error('Error registering LINE:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ตรวจสอบว่าผูก LINE แล้วหรือยัง
+app.get('/api/check-registration', (req, res) => {
+  try {
+    const lineUserId = req.query.line_user_id || req.headers['x-line-userid'];
+
+    if (!lineUserId) {
+      return res.json({
+        success: true,
+        isRegistered: false,
+        message: 'ไม่พบ LINE User ID'
+      });
+    }
+
+    const employee = sqliteService.getEmployeeByLineUserId(lineUserId);
+
+    if (employee) {
+      res.json({
+        success: true,
+        isRegistered: true,
+        employee: {
+          name: employee.name,
+          lineName: employee.line_name,
+          linePicture: employee.line_picture,
+          registeredAt: employee.registered_at
+        }
+      });
+    } else {
+      res.json({
+        success: true,
+        isRegistered: false
+      });
+    }
+  } catch (error) {
+    console.error('Error checking registration:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ดึงข้อมูลโปรไฟล์ส่วนตัว
+app.get('/api/my/profile', (req, res) => {
+  try {
+    const lineUserId = req.query.line_user_id || req.headers['x-line-userid'];
+
+    if (!lineUserId) {
+      return res.status(401).json({
+        success: false,
+        error: 'กรุณา Login ด้วย LINE'
+      });
+    }
+
+    const employee = sqliteService.getEmployeeByLineUserId(lineUserId);
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        error: 'ไม่พบข้อมูล กรุณาลงทะเบียนก่อน'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        name: employee.name,
+        lineName: employee.line_name,
+        linePicture: employee.line_picture,
+        registeredAt: employee.registered_at
+      }
+    });
+  } catch (error) {
+    console.error('Error getting profile:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ดึงสถิติส่วนตัว
+app.get('/api/my/stats', (req, res) => {
+  try {
+    const lineUserId = req.query.line_user_id || req.headers['x-line-userid'];
+    const month = req.query.month; // format: MM/YYYY
+
+    if (!lineUserId) {
+      return res.status(401).json({
+        success: false,
+        error: 'กรุณา Login ด้วย LINE'
+      });
+    }
+
+    const employee = sqliteService.getEmployeeByLineUserId(lineUserId);
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        error: 'ไม่พบข้อมูล กรุณาลงทะเบียนก่อน'
+      });
+    }
+
+    const stats = sqliteService.getPersonalStats(employee.name, month);
+
+    res.json({
+      success: true,
+      data: {
+        ...stats,
+        linePicture: employee.line_picture
+      }
+    });
+  } catch (error) {
+    console.error('Error getting personal stats:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ดึงประวัติลงเวลาส่วนตัว
+app.get('/api/my/history', (req, res) => {
+  try {
+    const lineUserId = req.query.line_user_id || req.headers['x-line-userid'];
+    const limit = parseInt(req.query.limit) || 30;
+
+    if (!lineUserId) {
+      return res.status(401).json({
+        success: false,
+        error: 'กรุณา Login ด้วย LINE'
+      });
+    }
+
+    const employee = sqliteService.getEmployeeByLineUserId(lineUserId);
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        error: 'ไม่พบข้อมูล กรุณาลงทะเบียนก่อน'
+      });
+    }
+
+    const history = sqliteService.getPersonalHistory(employee.name, limit);
+
+    res.json({
+      success: true,
+      employeeName: employee.name,
+      count: history.length,
+      data: history
+    });
+  } catch (error) {
+    console.error('Error getting personal history:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ========== 🆕 Admin LINE Management APIs ==========
+
+// ดึงรายชื่อพนักงานที่ผูก LINE แล้ว (Admin)
+app.get('/api/admin/linked-employees', authenticateAdmin, (req, res) => {
+  try {
+    const employees = sqliteService.getAllLinkedEmployees();
+    res.json({
+      success: true,
+      count: employees.length,
+      linkedCount: employees.filter(e => e.isLinked).length,
+      data: employees
+    });
+  } catch (error) {
+    console.error('Error getting linked employees:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ยกเลิกการเชื่อมต่อ LINE (Admin)
+app.delete('/api/admin/unlink-line/:name', authenticateAdmin, (req, res) => {
+  try {
+    const { name } = req.params;
+    const result = sqliteService.unlinkLineUserId(decodeURIComponent(name));
+    res.json(result);
+  } catch (error) {
+    console.error('Error unlinking LINE:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // ========== 🆕 Manual Clock In/Out APIs ==========
 
 function normalizeEmployeesFromRequest(body) {

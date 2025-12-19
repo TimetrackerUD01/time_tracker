@@ -10,7 +10,7 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/logo.png">
 
-    <!-- Google Fonts - Same as index.html -->
+    <!-- Google Fonts -->
     <link
         href="https://fonts.googleapis.com/css2?family=K2D&family=Kanit:wght@300;400;500;600;700&family=Sriracha&display=swap"
         rel="stylesheet">
@@ -18,14 +18,14 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- LIFF SDK -->
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
     <style>
         @font-face {
             font-family: 'Digital dream Fat';
             src: url('https://semicon.github.io/fonts/DigitaldreamFat.woff2') format('woff2'),
                 url('https://semicon.github.io/fonts/DigitaldreamFat.woff') format('woff');
-            font-weight: normal;
-            font-style: normal;
-            font-display: swap;
         }
 
         * {
@@ -51,31 +51,16 @@
             margin: 0 auto;
         }
 
-        /* 3D Card Style */
         .card-3d {
-            background: rgba(221, 255, 255, 0.85);
+            background: rgba(221, 255, 255, 0.9);
             border-radius: 20px;
             padding: 25px;
             margin-bottom: 20px;
             border: 3px solid rgba(255, 255, 255, 0.5);
-            box-shadow:
-                0 10px 30px rgba(0, 0, 0, 0.3),
-                0 5px 15px rgba(0, 0, 0, 0.2),
-                inset 0 2px 0 rgba(255, 255, 255, 0.8),
-                inset 0 -2px 5px rgba(0, 0, 0, 0.1);
-            transform: perspective(1000px) rotateX(2deg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
         }
 
-        .card-3d:hover {
-            transform: perspective(1000px) rotateX(0deg) translateY(-5px);
-            box-shadow:
-                0 20px 40px rgba(0, 0, 0, 0.4),
-                0 10px 20px rgba(0, 0, 0, 0.3),
-                inset 0 2px 0 rgba(255, 255, 255, 0.8);
-        }
-
-        /* Header */
         .header {
             text-align: center;
             padding-bottom: 15px;
@@ -94,31 +79,116 @@
             font-size: 1.5rem;
             font-weight: 600;
             color: #333;
-            margin-bottom: 5px;
-            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
         }
 
-        .header .subtitle {
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        /* Digital Clock */
         .clock {
             font-family: 'Digital dream Fat', monospace;
             font-size: 32px;
             color: #00f6fa;
             letter-spacing: 3px;
-            text-shadow: 1px 1px 2px teal, 0 0 25px green, 0 0 5px #00fbff;
+            text-shadow: 1px 1px 2px teal, 0 0 25px green;
             background: #333;
             padding: 10px 15px;
             border-radius: 10px;
             text-align: center;
             margin-top: 15px;
             border: 3px solid #555;
-            box-shadow:
-                inset 0 2px 10px rgba(0, 0, 0, 0.5),
-                0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Profile Card */
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .profile-card img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #4CAF50;
+            object-fit: cover;
+        }
+
+        .profile-card .info h2 {
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .profile-card .info p {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(180deg, #fff 0%, #f5f5f5 100%);
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            border: 2px solid #eee;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card .number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .stat-card .label {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .stat-card.work {
+            border-bottom: 4px solid #27ae60;
+        }
+
+        .stat-card.late {
+            border-bottom: 4px solid #f39c12;
+        }
+
+        .stat-card.absent {
+            border-bottom: 4px solid #e74c3c;
+        }
+
+        /* Mode Toggle */
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(180deg, #4CAF50 0%, #388E3C 100%);
+            color: white;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+        }
+
+        .mode-btn:not(.active) {
+            background: #e0e0e0;
+            color: #666;
         }
 
         /* Filters */
@@ -138,19 +208,6 @@
             font-family: 'Kanit', sans-serif;
             font-size: 1rem;
             background: white;
-            color: #333;
-            box-shadow:
-                inset 0 2px 5px rgba(0, 0, 0, 0.1),
-                0 3px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .filter-input:focus {
-            outline: none;
-            border-color: #00bcd4;
-            box-shadow:
-                inset 0 2px 5px rgba(0, 0, 0, 0.1),
-                0 0 0 3px rgba(0, 188, 212, 0.3);
         }
 
         .filter-btn {
@@ -162,9 +219,6 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow:
-                0 5px 15px rgba(0, 0, 0, 0.2),
-                inset 0 2px 0 rgba(255, 255, 255, 0.3);
         }
 
         .filter-btn.primary {
@@ -177,96 +231,17 @@
             color: white;
         }
 
-        .filter-btn:hover {
-            transform: translateY(-3px);
-            box-shadow:
-                0 8px 20px rgba(0, 0, 0, 0.3),
-                inset 0 2px 0 rgba(255, 255, 255, 0.3);
-        }
-
-        .filter-btn:active {
-            transform: translateY(0);
-            box-shadow:
-                0 2px 5px rgba(0, 0, 0, 0.2),
-                inset 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Summary Cards */
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .summary-card {
-            background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
-            border-radius: 15px;
-            padding: 20px 15px;
-            text-align: center;
-            border: 2px solid #ddd;
-            box-shadow:
-                0 8px 20px rgba(0, 0, 0, 0.15),
-                inset 0 2px 0 rgba(255, 255, 255, 1),
-                inset 0 -2px 5px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .summary-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow:
-                0 15px 30px rgba(0, 0, 0, 0.2),
-                inset 0 2px 0 rgba(255, 255, 255, 1);
-        }
-
-        .summary-card .icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
-        }
-
-        .summary-card .number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #333;
-            transition: all 0.3s ease;
-        }
-
-        .summary-card .label {
-            font-size: 0.85rem;
-            color: #666;
-            font-weight: 500;
-        }
-
-        .summary-card.present {
-            border-left: 5px solid #27ae60;
-        }
-
-        .summary-card.absent {
-            border-left: 5px solid #e74c3c;
-        }
-
-        .summary-card.working {
-            border-left: 5px solid #3498db;
-        }
-
-        .summary-card.late {
-            border-left: 5px solid #f39c12;
-        }
-
-        /* Live Feed Header */
-        .live-feed-header {
+        /* Activity List */
+        .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
         }
 
-        .live-feed-header h2 {
+        .section-header h2 {
             font-size: 1.1rem;
             font-weight: 600;
-            color: #333;
         }
 
         .live-indicator {
@@ -280,10 +255,9 @@
         .live-dot {
             width: 12px;
             height: 12px;
-            background: linear-gradient(180deg, #4CAF50 0%, #2E7D32 100%);
+            background: #4CAF50;
             border-radius: 50%;
             animation: pulse 1.5s infinite;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
         }
 
         @keyframes pulse {
@@ -300,27 +274,9 @@
             }
         }
 
-        /* Activity List */
         .activity-list {
             max-height: 400px;
             overflow-y: auto;
-            transition: opacity 0.15s ease;
-        }
-
-        .activity-item.new-record {
-            animation: highlightNew 1s ease;
-        }
-
-        @keyframes highlightNew {
-            0% {
-                background: #d4edda;
-                transform: scale(1.02);
-            }
-
-            100% {
-                background: linear-gradient(180deg, #fff 0%, #f8f8f8 100%);
-                transform: scale(1);
-            }
         }
 
         .activity-item {
@@ -331,45 +287,18 @@
             border-radius: 12px;
             margin-bottom: 10px;
             border: 2px solid #eee;
-            box-shadow:
-                0 4px 10px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 1);
-            transition: all 0.3s ease;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .activity-item:hover {
-            transform: translateX(5px);
-            box-shadow:
-                0 6px 15px rgba(0, 0, 0, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .activity-item .status-icon {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
-            margin-right: 15px;
-            flex-shrink: 0;
-            box-shadow:
-                0 4px 10px rgba(0, 0, 0, 0.2),
-                inset 0 2px 0 rgba(255, 255, 255, 0.3);
+            font-size: 1.2rem;
+            margin-right: 12px;
         }
 
         .activity-item .status-icon.in {
@@ -388,7 +317,6 @@
             font-weight: 600;
             font-size: 1rem;
             color: #333;
-            margin-bottom: 2px;
         }
 
         .activity-item .action {
@@ -397,14 +325,11 @@
         }
 
         .activity-item .time {
-            text-align: right;
             font-size: 1.1rem;
             font-weight: 700;
             color: #00838F;
-            text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
         }
 
-        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -416,7 +341,6 @@
             margin-bottom: 15px;
         }
 
-        /* Footer */
         .footer {
             text-align: center;
             padding: 15px;
@@ -426,56 +350,110 @@
             border-radius: 10px;
         }
 
-        /* Scrollbar */
-        .activity-list::-webkit-scrollbar {
-            width: 8px;
+        /* Registration Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
         }
 
-        .activity-list::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 4px;
+        .modal-overlay.show {
+            display: flex;
         }
 
-        .activity-list::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
-        .activity-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.3);
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
         }
 
-        /* Responsive */
+        .modal-header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .employee-list {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .employee-item {
+            padding: 12px 15px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .employee-item:hover {
+            border-color: #4CAF50;
+            background: #f0fff0;
+        }
+
+        .employee-item.selected {
+            border-color: #4CAF50;
+            background: #c8e6c9;
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 25px;
+            font-family: 'Kanit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(180deg, #4CAF50 0%, #388E3C 100%);
+            color: white;
+        }
+
+        .modal-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+
         @media (max-width: 500px) {
-            .container {
-                padding: 0;
-            }
-
             .card-3d {
-                border-radius: 15px;
                 padding: 20px 15px;
-            }
-
-            .header h1 {
-                font-size: 1.3rem;
             }
 
             .clock {
                 font-size: 24px;
             }
 
-            .summary-card .number {
+            .stat-card .number {
                 font-size: 1.5rem;
             }
 
-            .activity-item {
-                padding: 10px 12px;
-            }
-
-            .activity-item .status-icon {
-                width: 38px;
-                height: 38px;
-                font-size: 1.1rem;
+            .stats-grid {
+                gap: 8px;
             }
         }
     </style>
@@ -483,7 +461,7 @@
 
 <body>
     <div class="container">
-        <!-- Header Card -->
+        <!-- Header -->
         <div class="card-3d">
             <div class="header">
                 <img src="/logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
@@ -492,28 +470,70 @@
                 <div class="clock" id="currentTime">--:--:--</div>
             </div>
 
+            <!-- Profile Card (แสดงเมื่อ login + ลงทะเบียนแล้ว) -->
+            <div id="profileCard" class="profile-card hidden">
+                <img id="profilePicture" src="" alt="Profile">
+                <div class="info">
+                    <h2 id="profileName">-</h2>
+                    <p>📅 ลงทะเบียนเมื่อ <span id="registeredAt">-</span></p>
+                </div>
+            </div>
+
+            <!-- Mode Toggle -->
+            <div class="mode-toggle">
+                <button class="mode-btn active" id="btnPersonal" onclick="switchMode('personal')">👤
+                    ข้อมูลส่วนตัว</button>
+                <button class="mode-btn" id="btnAll" onclick="switchMode('all')">👥 ดูทุกคน</button>
+            </div>
+        </div>
+
+        <!-- Personal Dashboard -->
+        <div id="personalDashboard" class="card-3d">
+            <h3 style="margin-bottom: 15px;">📊 สถิติประจำเดือน</h3>
+            <div class="stats-grid">
+                <div class="stat-card work">
+                    <div class="number" id="statWork">-</div>
+                    <div class="label">มาทำงาน</div>
+                </div>
+                <div class="stat-card late">
+                    <div class="number" id="statLate">-</div>
+                    <div class="label">มาสาย</div>
+                </div>
+                <div class="stat-card absent">
+                    <div class="number" id="statAbsent">-</div>
+                    <div class="label">ขาดงาน</div>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <h2>📋 ประวัติลงเวลา</h2>
+            </div>
+            <div class="activity-list" id="personalHistory">
+                <!-- History items -->
+            </div>
+        </div>
+
+        <!-- All Status (เหมือนเดิม) -->
+        <div id="allDashboard" class="card-3d hidden">
             <!-- Filters -->
             <div class="filters">
                 <input type="text" class="filter-input" id="nameFilter" placeholder="🔍 ค้นหาชื่อ...">
                 <input type="date" class="filter-input" id="dateFilter" style="max-width: 150px;">
             </div>
             <div class="filters">
-                <button class="filter-btn primary" onclick="applyFilters()">🔍 ค้นหา</button>
+                <button class="filter-btn primary" onclick="loadAllData()">🔍 ค้นหา</button>
                 <button class="filter-btn secondary" onclick="resetFilters()">🔄 รีเซ็ต</button>
             </div>
-        </div>
 
-        <!-- Live Feed -->
-        <div class="card-3d">
-            <div class="live-feed-header">
+            <div class="section-header">
                 <h2>📋 รายการล่าสุด</h2>
                 <div class="live-indicator">
                     <div class="live-dot"></div>
                     <span>Live</span>
                 </div>
             </div>
-            <div class="activity-list" id="activityList">
-                <!-- Activity items will be inserted here -->
+            <div class="activity-list" id="allActivityList">
+                <!-- Activity items -->
             </div>
         </div>
 
@@ -523,49 +543,281 @@
         </div>
     </div>
 
+    <!-- Registration Modal -->
+    <div class="modal-overlay" id="registerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img id="modalProfilePic" src="" alt="Profile">
+                <h2>🔗 ลงทะเบียนผูกบัญชี LINE</h2>
+                <p>สวัสดี <strong id="modalLineName">-</strong><br>กรุณาเลือกชื่อของคุณในระบบ</p>
+            </div>
+            <input type="text" class="filter-input" id="searchEmployee" placeholder="🔍 ค้นหาชื่อ..."
+                style="width:100%; margin-bottom:15px;" oninput="filterEmployees()">
+            <div class="employee-list" id="employeeList">
+                <!-- Employee items -->
+            </div>
+            <button class="modal-btn" id="btnRegister" onclick="registerLine()" disabled>✅ ยืนยันลงทะเบียน</button>
+        </div>
+    </div>
+
     <script>
-        // Configuration
         const API_BASE_URL = window.location.origin;
-        const REFRESH_INTERVAL = 5000; // 5 seconds
+        const REFRESH_INTERVAL = 10000;
 
+        let lineProfile = null;
+        let lineUserId = null;
+        let isRegistered = false;
+        let employeeData = null;
+        let currentMode = 'personal';
+        let selectedEmployee = null;
+        let allEmployees = [];
         let refreshTimer = null;
-        let lastRecordId = null;
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            // Set today's date as default
+        // ========== Initialization ==========
+        document.addEventListener('DOMContentLoaded', async () => {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('dateFilter').value = today;
 
-            // Start clock
             updateClock();
             setInterval(updateClock, 1000);
 
-            // Load initial data
-            loadData();
-
-            // Start auto-refresh
-            startAutoRefresh();
+            await initLiff();
         });
 
-        // Update clock
-        function updateClock() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('th-TH', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            document.getElementById('currentTime').textContent = timeStr;
+        async function initLiff() {
+            try {
+                // Try to get LIFF ID from server config
+                const configRes = await fetch(`${API_BASE_URL}/api/config`);
+                if (configRes.ok) {
+                    const config = await configRes.json();
+                    if (config.liffId) {
+                        await liff.init({ liffId: config.liffId });
+
+                        if (liff.isLoggedIn()) {
+                            lineProfile = await liff.getProfile();
+                            lineUserId = lineProfile.userId;
+                            console.log('LINE Profile:', lineProfile.displayName);
+
+                            await checkRegistration();
+                        } else {
+                            // ไม่ได้ Login LINE - แสดงโหมด All
+                            showAllMode();
+                        }
+                    } else {
+                        showAllMode();
+                    }
+                } else {
+                    showAllMode();
+                }
+            } catch (error) {
+                console.log('LIFF init error:', error);
+                showAllMode();
+            }
         }
 
-        // Load data from API
-        async function loadData(showLoading = false) {
+        async function checkRegistration() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/check-registration?line_user_id=${lineUserId}`);
+                const result = await res.json();
+
+                if (result.success && result.isRegistered) {
+                    isRegistered = true;
+                    employeeData = result.employee;
+                    showPersonalDashboard();
+                } else {
+                    // ยังไม่ลงทะเบียน - แสดง Modal
+                    showRegisterModal();
+                }
+            } catch (error) {
+                console.error('Check registration error:', error);
+                showAllMode();
+            }
+        }
+
+        function showRegisterModal() {
+            if (lineProfile) {
+                document.getElementById('modalProfilePic').src = lineProfile.pictureUrl || '/logo.png';
+                document.getElementById('modalLineName').textContent = lineProfile.displayName;
+            }
+            loadUnlinkedEmployees();
+            document.getElementById('registerModal').classList.add('show');
+        }
+
+        async function loadUnlinkedEmployees() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/employees/unlinked`);
+                const result = await res.json();
+
+                if (result.success) {
+                    allEmployees = result.data;
+                    renderEmployeeList(allEmployees);
+                }
+            } catch (error) {
+                console.error('Error loading employees:', error);
+            }
+        }
+
+        function renderEmployeeList(employees) {
+            const container = document.getElementById('employeeList');
+            if (employees.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div>ไม่พบรายชื่อ</div></div>';
+                return;
+            }
+
+            container.innerHTML = employees.map(emp => `
+                <div class="employee-item" data-name="${escapeHtml(emp.name)}" onclick="selectEmployee(this, '${escapeHtml(emp.name)}')">
+                    ${escapeHtml(emp.name)}
+                </div>
+            `).join('');
+        }
+
+        function filterEmployees() {
+            const query = document.getElementById('searchEmployee').value.toLowerCase();
+            const filtered = allEmployees.filter(e => e.name.toLowerCase().includes(query));
+            renderEmployeeList(filtered);
+        }
+
+        function selectEmployee(el, name) {
+            document.querySelectorAll('.employee-item').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedEmployee = name;
+            document.getElementById('btnRegister').disabled = false;
+        }
+
+        async function registerLine() {
+            if (!selectedEmployee || !lineUserId) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/register-line`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        employee_name: selectedEmployee,
+                        line_user_id: lineUserId,
+                        line_name: lineProfile?.displayName || '',
+                        line_picture: lineProfile?.pictureUrl || ''
+                    })
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    document.getElementById('registerModal').classList.remove('show');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ลงทะเบียนสำเร็จ!',
+                        text: `ยินดีต้อนรับ ${selectedEmployee}`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    employeeData = { name: selectedEmployee };
+                    isRegistered = true;
+                    showPersonalDashboard();
+                } else {
+                    Swal.fire('เกิดข้อผิดพลาด', result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Register error:', error);
+                Swal.fire('เกิดข้อผิดพลาด', error.message, 'error');
+            }
+        }
+
+        // ========== Dashboard Functions ==========
+
+        function showPersonalDashboard() {
+            document.getElementById('profileCard').classList.remove('hidden');
+            document.getElementById('personalDashboard').classList.remove('hidden');
+            document.getElementById('allDashboard').classList.add('hidden');
+            document.getElementById('btnPersonal').classList.add('active');
+            document.getElementById('btnAll').classList.remove('active');
+
+            // Set profile
+            if (lineProfile) {
+                document.getElementById('profilePicture').src = lineProfile.pictureUrl || '/logo.png';
+            }
+            if (employeeData) {
+                document.getElementById('profileName').textContent = employeeData.name;
+                document.getElementById('registeredAt').textContent = employeeData.registeredAt || '-';
+            }
+
+            loadPersonalData();
+            startAutoRefresh('personal');
+        }
+
+        function showAllMode() {
+            document.getElementById('profileCard').classList.add('hidden');
+            document.getElementById('personalDashboard').classList.add('hidden');
+            document.getElementById('allDashboard').classList.remove('hidden');
+            document.getElementById('btnPersonal').classList.remove('active');
+            document.getElementById('btnAll').classList.add('active');
+
+            loadAllData();
+            startAutoRefresh('all');
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            if (mode === 'personal' && isRegistered) {
+                showPersonalDashboard();
+            } else {
+                showAllMode();
+            }
+        }
+
+        async function loadPersonalData() {
+            if (!lineUserId) return;
+
+            try {
+                // Load stats
+                const statsRes = await fetch(`${API_BASE_URL}/api/my/stats?line_user_id=${lineUserId}`);
+                const statsResult = await statsRes.json();
+
+                if (statsResult.success) {
+                    document.getElementById('statWork').textContent = statsResult.data.workDays || 0;
+                    document.getElementById('statLate').textContent = statsResult.data.lateDays || 0;
+                    document.getElementById('statAbsent').textContent = statsResult.data.absentDays || 0;
+                }
+
+                // Load history
+                const historyRes = await fetch(`${API_BASE_URL}/api/my/history?line_user_id=${lineUserId}&limit=10`);
+                const historyResult = await historyRes.json();
+
+                if (historyResult.success) {
+                    renderPersonalHistory(historyResult.data);
+                }
+
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('th-TH');
+            } catch (error) {
+                console.error('Error loading personal data:', error);
+            }
+        }
+
+        function renderPersonalHistory(records) {
+            const container = document.getElementById('personalHistory');
+
+            if (!records || records.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div>ไม่พบประวัติ</div></div>';
+                return;
+            }
+
+            container.innerHTML = records.map(r => `
+                <div class="activity-item">
+                    <div class="status-icon in">🟢</div>
+                    <div class="info">
+                        <div class="name">${escapeHtml(r.date)}</div>
+                        <div class="action">เข้า: ${r.clockInTime || '-'} | ออก: ${r.clockOutTime || '-'}</div>
+                    </div>
+                    <div class="time">${r.workingHours ? r.workingHours.toFixed(1) + ' ชม.' : '-'}</div>
+                </div>
+            `).join('');
+        }
+
+        async function loadAllData() {
             try {
                 const name = document.getElementById('nameFilter').value.trim();
                 const dateInput = document.getElementById('dateFilter').value;
 
-                // Convert date format YYYY-MM-DD to DD/MM/YYYY
                 let date = null;
                 if (dateInput) {
                     const [year, month, day] = dateInput.split('-');
@@ -577,127 +829,73 @@
                 if (date) params.append('date', date);
                 params.append('limit', '30');
 
-                const response = await fetch(`${API_BASE_URL}/api/status/live?${params}`);
-                const result = await response.json();
+                const res = await fetch(`${API_BASE_URL}/api/status/live?${params}`);
+                const result = await res.json();
 
                 if (result.success) {
-                    updateActivityList(result.data.records);
-                    document.getElementById('lastUpdate').textContent =
-                        new Date().toLocaleTimeString('th-TH');
-                } else {
-                    console.error('API Error:', result.error);
+                    renderAllActivity(result.data.records);
+                    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('th-TH');
                 }
             } catch (error) {
-                console.error('Failed to load data:', error);
+                console.error('Error loading all data:', error);
             }
         }
 
-        // Update activity list (Smart update to prevent flickering)
-        let lastRecordsJson = '';
-
-        function updateActivityList(records) {
-            const container = document.getElementById('activityList');
+        function renderAllActivity(records) {
+            const container = document.getElementById('allActivityList');
 
             if (!records || records.length === 0) {
-                if (lastRecordsJson !== 'empty') {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="icon">📭</div>
-                            <div>ไม่พบรายการลงเวลา</div>
-                        </div>
-                    `;
-                    lastRecordsJson = 'empty';
-                }
+                container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div>ไม่พบรายการ</div></div>';
                 return;
             }
 
-            // Compare with previous data - skip if no changes
-            const newRecordsJson = JSON.stringify(records.map(r => r.id + r.type));
-            if (newRecordsJson === lastRecordsJson) {
-                return; // No changes, don't re-render
-            }
-
-            // Check for new records at top
-            const oldFirstId = lastRecordId;
-            const newFirstId = records[0]?.id;
-            const hasNewRecords = oldFirstId && newFirstId !== oldFirstId;
-
-            lastRecordId = newFirstId;
-            lastRecordsJson = newRecordsJson;
-
-            // Build new content
-            const newContent = records.map((record, index) => `
-                <div class="activity-item ${hasNewRecords && index === 0 ? 'new-record' : ''}" data-id="${record.id}-${record.type}">
-                    <div class="status-icon ${record.type}">
-                        ${record.type === 'in' ? '🟢' : '🔴'}
-                    </div>
+            container.innerHTML = records.map(r => `
+                <div class="activity-item">
+                    <div class="status-icon ${r.type}">${r.type === 'in' ? '🟢' : '🔴'}</div>
                     <div class="info">
-                        <div class="name">${escapeHtml(record.employee)}</div>
-                        <div class="action">
-                            ${record.type === 'in' ? '📥 ลงเวลาเข้า' : '📤 ลงเวลาออก'}
-                        </div>
+                        <div class="name">${escapeHtml(r.employee)}</div>
+                        <div class="action">${r.type === 'in' ? '📥 ลงเวลาเข้า' : '📤 ลงเวลาออก'}</div>
                     </div>
-                    <div class="time">${record.timeOnly || '-'}</div>
+                    <div class="time">${r.timeOnly || '-'}</div>
                 </div>
             `).join('');
-
-            // Apply with fade transition
-            container.style.opacity = '0.7';
-            setTimeout(() => {
-                container.innerHTML = newContent;
-                container.style.opacity = '1';
-            }, 100);
         }
 
-        // Escape HTML to prevent XSS
+        function resetFilters() {
+            document.getElementById('nameFilter').value = '';
+            document.getElementById('dateFilter').value = new Date().toISOString().split('T')[0];
+            loadAllData();
+        }
+
+        // ========== Utilities ==========
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('th-TH');
+        }
+
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Apply filters
-        function applyFilters() {
-            loadData(true);
-        }
-
-        // Reset filters
-        function resetFilters() {
-            document.getElementById('nameFilter').value = '';
-            document.getElementById('dateFilter').value = new Date().toISOString().split('T')[0];
-            loadData(true);
-        }
-
-        // Start auto-refresh
-        function startAutoRefresh() {
-            stopAutoRefresh();
+        function startAutoRefresh(mode) {
+            if (refreshTimer) clearInterval(refreshTimer);
             refreshTimer = setInterval(() => {
-                loadData(false);
+                if (mode === 'personal') loadPersonalData();
+                else loadAllData();
             }, REFRESH_INTERVAL);
         }
 
-        // Stop auto-refresh
-        function stopAutoRefresh() {
-            if (refreshTimer) {
-                clearInterval(refreshTimer);
-                refreshTimer = null;
-            }
-        }
-
-        // Handle visibility change (pause when tab is hidden)
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
-                stopAutoRefresh();
+                if (refreshTimer) clearInterval(refreshTimer);
             } else {
-                loadData(false);
-                startAutoRefresh();
-            }
-        });
-
-        // Handle Enter key in search input
-        document.getElementById('nameFilter').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                applyFilters();
+                if (currentMode === 'personal') loadPersonalData();
+                else loadAllData();
+                startAutoRefresh(currentMode);
             }
         });
     </script>

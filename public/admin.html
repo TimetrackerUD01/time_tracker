@@ -1664,7 +1664,8 @@
                 reports: 'รายงานและส่งออก',
                 employees: 'จัดการพนักงาน',
                 settings: 'ตั้งค่าระบบ',
-                nightShift: 'ตั้งค่ากะกลางคืน'
+                nightShift: 'ตั้งค่ากะกลางคืน',
+                lineManagement: 'จัดการ LINE'
             };
             document.getElementById('pageTitle').textContent = titles[sectionId] || sectionId;
 
@@ -1677,6 +1678,11 @@
             if (sectionId === 'nightShift') {
                 loadNightShiftList();
                 loadNightShiftEmployeeDropdown();
+            }
+
+            // 🆕 Load LINE Management data
+            if (sectionId === 'lineManagement') {
+                loadLinkedEmployees();
             }
 
             if (sectionId === 'dashboard') {
@@ -3379,6 +3385,129 @@
                     icon: 'error'
                 });
             }
+        }
+
+        // ========== 🆕 LINE Management Functions ==========
+
+        let allLinkedEmployees = [];
+
+        async function loadLinkedEmployees() {
+            try {
+                const response = await makeApiCall('/api/admin/linked-employees');
+                const data = await response.json();
+
+                if (data.success) {
+                    allLinkedEmployees = data.data;
+
+                    // Update stats
+                    document.getElementById('lineLinkedCount').textContent = data.linkedCount || 0;
+                    document.getElementById('lineUnlinkedCount').textContent = (data.count - data.linkedCount) || 0;
+                    document.getElementById('lineTotalCount').textContent = data.count || 0;
+
+                    renderLineTable(allLinkedEmployees);
+                } else {
+                    throw new Error(data.error || 'Failed to load data');
+                }
+            } catch (error) {
+                console.error('Error loading linked employees:', error);
+                document.getElementById('lineTableBody').innerHTML = `
+                    <tr><td colspan="6" class="text-center text-danger py-4">
+                        <i class="fas fa-exclamation-triangle"></i> ${error.message}
+                    </td></tr>`;
+            }
+        }
+
+        function renderLineTable(employees) {
+            const tbody = document.getElementById('lineTableBody');
+
+            if (!employees || employees.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">
+                    <i class="fas fa-inbox"></i> ไม่พบข้อมูล
+                </td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = employees.map((emp, idx) => `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td><strong>${escapeHtml(emp.name)}</strong></td>
+                    <td>${emp.lineName ? `<i class="fab fa-line text-success"></i> ${escapeHtml(emp.lineName)}` : '<span class="text-muted">-</span>'}</td>
+                    <td>${emp.registeredAt || '-'}</td>
+                    <td>
+                        ${emp.isLinked
+                    ? '<span class="badge bg-success"><i class="fas fa-check"></i> ผูกแล้ว</span>'
+                    : '<span class="badge bg-secondary">ยังไม่ผูก</span>'}
+                    </td>
+                    <td>
+                        ${emp.isLinked
+                    ? `<button class="btn btn-sm btn-outline-danger" onclick="unlinkLine('${escapeHtml(emp.name)}')">
+                                <i class="fas fa-unlink"></i> ยกเลิก
+                               </button>`
+                    : '-'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterLineList() {
+            const query = document.getElementById('lineSearchInput').value.toLowerCase();
+            const filtered = allLinkedEmployees.filter(e =>
+                e.name.toLowerCase().includes(query) ||
+                (e.lineName && e.lineName.toLowerCase().includes(query))
+            );
+            renderLineTable(filtered);
+        }
+
+        async function unlinkLine(employeeName) {
+            try {
+                const result = await Swal.fire({
+                    title: 'ยืนยันการยกเลิก?',
+                    html: `ยกเลิกการเชื่อมต่อ LINE ของ<br><strong>${escapeHtml(employeeName)}</strong>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'ยืนยัน ยกเลิก',
+                    cancelButtonText: 'ยกเลิก'
+                });
+
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                    const response = await makeApiCall(`/api/admin/unlink-line/${encodeURIComponent(employeeName)}`, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        await Swal.fire({
+                            title: 'สำเร็จ!',
+                            text: data.message,
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        loadLinkedEmployees();
+                    } else {
+                        throw new Error(data.error || 'Failed to unlink');
+                    }
+                }
+            } catch (error) {
+                console.error('Error unlinking:', error);
+                Swal.fire({
+                    title: 'เกิดข้อผิดพลาด',
+                    text: error.message,
+                    icon: 'error'
+                });
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // เริ่มต้นเมื่อโหลดหน้า
