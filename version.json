@@ -1,5 +1,5 @@
 {
-    "version": "1.0.3",
-    "buildDate": "2024-12-18",
-    "changelog": "ปรับแต่งระบบ แจ้งเตือน telegram"
+    "version": "1.1.0",
+    "buildDate": "2024-12-19",
+    "changelog": "เพิ่ม Personal Dashboard - ดูข้อมูลส่วนตัว/สถิติ/ประวัติ ผ่าน LINE + Admin จัดการการเชื่อมต่อ LINE"
 }
