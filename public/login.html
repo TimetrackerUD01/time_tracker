@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบจัดการลงเวลา - อบต.ข่าใหญ่</title>
-    
+
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,22 +13,22 @@
     <meta name="apple-mobile-web-app-title" content="ลงเวลา อบต.ข่าใหญ่">
     <meta name="description" content="ระบบจัดการลงเวลาออนไลน์ อบต.ข่าใหญ่ - หน้าเข้าสู่ระบบ">
     <meta name="theme-color" content="#667eea">
-    
+
     <!-- PWA Icons and Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest-admin.json">
     <link rel="icon" href="/logo.png" type="image/png">
     <link rel="apple-touch-icon" href="/logo.png">
-    
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=K2D:wght@300;400;600;700&family=Kanit:wght@300;400;600;700&display=swap');
-        
+
         * {
             font-family: 'K2D', sans-serif;
         }
-        
+
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
@@ -36,7 +37,7 @@
             justify-content: center;
             padding: 20px;
         }
-        
+
         .login-container {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -47,23 +48,24 @@
             width: 100%;
             animation: slideUp 0.8s ease-out;
         }
-        
+
         @keyframes slideUp {
             from {
                 opacity: 0;
                 transform: translateY(30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
         .logo-section {
             text-align: center;
             margin-bottom: 30px;
         }
-        
+
         .logo-img {
             width: 80px;
             height: 80px;
@@ -71,20 +73,20 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
             margin-bottom: 15px;
         }
-        
+
         .org-title {
             color: #2c3e50;
             font-weight: 700;
             font-size: 1.4rem;
             margin-bottom: 5px;
         }
-        
+
         .org-subtitle {
             color: #7f8c8d;
             font-size: 0.9rem;
             margin-bottom: 0;
         }
-        
+
         .system-title {
             background: linear-gradient(135deg, #667eea, #764ba2);
             -webkit-background-clip: text;
@@ -95,11 +97,11 @@
             text-align: center;
             margin-bottom: 30px;
         }
-        
+
         .form-group {
             margin-bottom: 25px;
         }
-        
+
         .form-label {
             font-weight: 600;
             color: #2c3e50;
@@ -108,7 +110,7 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .form-control {
             border: 2px solid #e9ecef;
             border-radius: 12px;
@@ -117,17 +119,17 @@
             transition: all 0.3s ease;
             background: rgba(255, 255, 255, 0.8);
         }
-        
+
         .form-control:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
             background: white;
         }
-        
+
         .input-group {
             position: relative;
         }
-        
+
         .password-toggle {
             position: absolute;
             right: 12px;
@@ -140,11 +142,11 @@
             z-index: 10;
             padding: 4px;
         }
-        
+
         .password-toggle:hover {
             color: #495057;
         }
-        
+
         .btn-login {
             background: linear-gradient(135deg, #667eea, #764ba2);
             border: none;
@@ -157,57 +159,57 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .btn-login:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
-        
+
         .btn-login:active {
             transform: translateY(0);
         }
-        
+
         .btn-login:disabled {
             opacity: 0.7;
             cursor: not-allowed;
             transform: none;
         }
-        
+
         .loading-spinner {
             display: none;
         }
-        
+
         .loading .loading-spinner {
             display: inline-block;
         }
-        
+
         .loading .button-text {
             display: none;
         }
-        
+
         .alert {
             border-radius: 12px;
             border: none;
             font-weight: 500;
         }
-        
+
         .alert-danger {
             background: rgba(220, 53, 69, 0.1);
             color: #dc3545;
         }
-        
+
         .alert-success {
             background: rgba(40, 167, 69, 0.1);
             color: #28a745;
         }
-        
+
         .footer-text {
             text-align: center;
             margin-top: 30px;
             color: #6c757d;
             font-size: 0.85rem;
         }
-        
+
         .security-note {
             background: rgba(13, 202, 240, 0.1);
             border: 1px solid rgba(13, 202, 240, 0.2);
@@ -217,54 +219,54 @@
             font-size: 0.85rem;
             color: #0dcaf0;
         }
-        
+
         .forgot-password {
             text-align: center;
             margin-top: 15px;
         }
-        
+
         .forgot-password a {
             color: #667eea;
             text-decoration: none;
             font-size: 0.9rem;
             font-weight: 500;
         }
-        
+
         .forgot-password a:hover {
             text-decoration: underline;
         }
-        
+
         @media (max-width: 576px) {
             .login-container {
                 padding: 30px 20px;
                 margin: 10px;
             }
-            
+
             .org-title {
                 font-size: 1.2rem;
             }
-            
+
             .system-title {
                 font-size: 1.1rem;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <!-- Logo และข้อมูลองค์กร -->
         <div class="logo-section">
-            <img src="/logo.png" 
-                 alt="โลโก้ อบต.ข่าใหญ่" class="logo-img">
+            <img src="/logo.png" alt="โลโก้ อบต.ข่าใหญ่" class="logo-img">
             <h4 class="org-title">องค์การบริหารส่วนตำบลข่าใหญ่</h4>
             <p class="org-subtitle">อำเภอเมือง จังหวัดนครราชสีมา</p>
         </div>
-        
+
         <h5 class="system-title">
             <i class="fas fa-shield-alt"></i>
             ระบบจัดการลงเวลาเข้า-ออกงาน
         </h5>
-        
+
         <!-- ฟอร์มล็อกอิน -->
         <form id="loginForm">
             <div class="form-group">
@@ -272,27 +274,27 @@
                     <i class="fas fa-user"></i>
                     ชื่อผู้ใช้งาน
                 </label>
-                <input type="text" class="form-control" id="username" name="username" 
-                       placeholder="กรอกชื่อผู้ใช้งาน" required autocomplete="username">
+                <input type="text" class="form-control" id="username" name="username" placeholder="กรอกชื่อผู้ใช้งาน"
+                    required autocomplete="username">
             </div>
-            
+
             <div class="form-group">
                 <label for="password" class="form-label">
                     <i class="fas fa-lock"></i>
                     รหัสผ่าน
                 </label>
                 <div class="input-group">
-                    <input type="password" class="form-control" id="password" name="password" 
-                           placeholder="กรอกรหัสผ่าน" required autocomplete="current-password">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="กรอกรหัสผ่าน"
+                        required autocomplete="current-password">
                     <button type="button" class="password-toggle" id="togglePassword">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
             </div>
-            
+
             <!-- แสดงข้อความแจ้งเตือน -->
             <div id="alertMessage" style="display: none;"></div>
-            
+
             <button type="submit" class="btn btn-primary btn-login" id="loginButton">
                 <span class="loading-spinner">
                     <i class="fas fa-spinner fa-spin"></i>
@@ -302,7 +304,7 @@
                     เข้าสู่ระบบ
                 </span>
             </button>
-            
+
             <div class="forgot-password">
                 <a href="#" onclick="showForgotPassword()">
                     <i class="fas fa-question-circle"></i>
@@ -310,13 +312,13 @@
                 </a>
             </div>
         </form>
-        
+
         <div class="security-note">
             <i class="fas fa-info-circle"></i>
-            <strong>หมายเหตุ:</strong> ระบบนี้เฉพาะพนักงาน อบต.ข่าใหญ่ เท่านั้น 
+            <strong>หมายเหตุ:</strong> ระบบนี้เฉพาะพนักงาน อบต.ข่าใหญ่ เท่านั้น
             หากมีปัญหาการใช้งาน กรุณาติดต่อฝ่ายไอที
         </div>
-        
+
         <div class="footer-text">
             <i class="fas fa-copyright"></i>
             2025 องค์การบริหารส่วนตำบลข่าใหญ่ <br>
@@ -326,16 +328,16 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <script>
         // การตั้งค่าพื้นฐาน
         const API_BASE_URL = window.location.origin + '/api';
-        
+
         // Toggle รหัสผ่าน
-        document.getElementById('togglePassword').addEventListener('click', function() {
+        document.getElementById('togglePassword').addEventListener('click', function () {
             const passwordInput = document.getElementById('password');
             const toggleIcon = this.querySelector('i');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleIcon.classList.remove('fa-eye');
@@ -346,7 +348,7 @@
                 toggleIcon.classList.add('fa-eye');
             }
         });
-        
+
         // ฟังก์ชันแสดงข้อความแจ้งเตือน
         function showAlert(message, type = 'danger') {
             const alertDiv = document.getElementById('alertMessage');
@@ -358,7 +360,7 @@
                 </div>
             `;
             alertDiv.style.display = 'block';
-            
+
             // ซ่อนข้อความหลัง 5 วินาที
             setTimeout(() => {
                 const alert = alertDiv.querySelector('.alert');
@@ -370,25 +372,25 @@
                 }
             }, 5000);
         }
-        
+
         // ฟังก์ชันล็อกอิน
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const loginButton = document.getElementById('loginButton');
-            
+
             // ตรวจสอบข้อมูล
             if (!username || !password) {
                 showAlert('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน');
                 return;
             }
-            
+
             // แสดง loading
             loginButton.classList.add('loading');
             loginButton.disabled = true;
-            
+
             try {
                 const response = await fetch(`${API_BASE_URL}/admin/login`, {
                     method: 'POST',
@@ -397,25 +399,25 @@
                     },
                     body: JSON.stringify({ username, password })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     // เก็บ token
                     localStorage.setItem('adminToken', result.token);
                     localStorage.setItem('adminUser', JSON.stringify(result.user));
-                    
+
                     showAlert('เข้าสู่ระบบสำเร็จ กำลังเปลี่ยนหน้า...', 'success');
-                    
+
                     // เปลี่ยนหน้าหลัง 1 วินาที
                     setTimeout(() => {
                         window.location.href = '/admin/dashboard';
                     }, 1000);
-                    
+
                 } else {
                     showAlert(result.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
                 }
-                
+
             } catch (error) {
                 console.error('Login error:', error);
                 showAlert('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
@@ -425,7 +427,7 @@
                 loginButton.disabled = false;
             }
         });
-        
+
         // ฟังก์ชันลืมรหัสผ่าน
         function showForgotPassword() {
             Swal.fire({
@@ -459,7 +461,7 @@
                 width: 500
             });
         }
-        
+
         // ตรวจสอบว่าล็อกอินอยู่แล้วหรือไม่
         function checkExistingLogin() {
             const token = localStorage.getItem('adminToken');
@@ -470,43 +472,43 @@
                         'Authorization': `Bearer ${token}`
                     }
                 })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        // ล็อกอินอยู่แล้ว เปลี่ยนหน้า
-                        window.location.href = '/admin/dashboard';
-                    }
-                })
-                .catch(error => {
-                    // Token หมดอายุหรือไม่ถูกต้อง ลบออก
-                    localStorage.removeItem('adminToken');
-                    localStorage.removeItem('adminUser');
-                });
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            // ล็อกอินอยู่แล้ว เปลี่ยนหน้า
+                            window.location.href = '/admin/dashboard';
+                        }
+                    })
+                    .catch(error => {
+                        // Token หมดอายุหรือไม่ถูกต้อง ลบออก
+                        localStorage.removeItem('adminToken');
+                        localStorage.removeItem('adminUser');
+                    });
             }
         }
-        
+
         // ตรวจสอบเมื่อโหลดหน้า
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             checkExistingLogin();
-            
+
             // โฟกัสที่ช่องชื่อผู้ใช้
             document.getElementById('username').focus();
-            
+
             // ลงทะเบียน Service Worker สำหรับ PWA
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
+                    .then(function (registration) {
                         console.log('🔧 Service Worker ลงทะเบียนสำเร็จ:', registration.scope);
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         console.error('❌ การลงทะเบียน Service Worker ล้มเหลว:', error);
                     });
             }
         });
-        
+
         // ป้องกันการ submit แบบ Enter หลายครั้ง
         let isSubmitting = false;
-        document.getElementById('loginForm').addEventListener('keypress', function(e) {
+        document.getElementById('loginForm').addEventListener('keypress', function (e) {
             if (e.key === 'Enter' && !isSubmitting) {
                 isSubmitting = true;
                 this.dispatchEvent(new Event('submit'));
@@ -517,4 +519,5 @@
         });
     </script>
 </body>
+
 </html>
