@@ -586,31 +586,47 @@
 
         async function initLiff() {
             try {
-                // Try to get LIFF ID from server config
-                const configRes = await fetch(`${API_BASE_URL}/api/config`);
-                if (configRes.ok) {
-                    const config = await configRes.json();
-                    if (config.liffId) {
-                        await liff.init({ liffId: config.liffId });
+                // ถ้าเปิดผ่าน LIFF app จะ login มาแล้ว - ไม่ต้อง init ใหม่
+                if (typeof liff !== 'undefined') {
+                    // ตรวจสอบว่า LIFF พร้อมใช้งานหรือยัง
+                    if (liff.isLoggedIn && liff.isLoggedIn()) {
+                        // ถ้า login มาแล้ว (เปิดผ่าน LIFF URL)
+                        try {
+                            const idToken = liff.getDecodedIDToken();
+                            if (idToken) {
+                                lineProfile = {
+                                    userId: idToken.sub,
+                                    displayName: idToken.name,
+                                    pictureUrl: idToken.picture
+                                };
+                                lineUserId = idToken.sub;
+                                console.log('LINE Profile (from token):', lineProfile.displayName);
+                                await checkRegistration();
+                                return;
+                            }
+                        } catch (tokenError) {
+                            console.log('Token error:', tokenError);
+                        }
 
-                        if (liff.isLoggedIn()) {
+                        // ลองดึง profile โดยตรง
+                        try {
                             lineProfile = await liff.getProfile();
                             lineUserId = lineProfile.userId;
-                            console.log('LINE Profile:', lineProfile.displayName);
-
+                            console.log('LINE Profile (direct):', lineProfile.displayName);
                             await checkRegistration();
-                        } else {
-                            // ไม่ได้ Login LINE - แสดงโหมด All
-                            showAllMode();
+                            return;
+                        } catch (profileError) {
+                            console.log('Profile error:', profileError);
                         }
-                    } else {
-                        showAllMode();
                     }
-                } else {
-                    showAllMode();
                 }
+
+                // ถ้าไม่ได้ login หรือไม่มี LIFF - แสดงโหมด All
+                console.log('Not logged in via LIFF - showing All mode');
+                showAllMode();
+
             } catch (error) {
-                console.log('LIFF init error:', error);
+                console.log('LIFF check error:', error);
                 showAllMode();
             }
         }
@@ -758,8 +774,30 @@
 
         function switchMode(mode) {
             currentMode = mode;
-            if (mode === 'personal' && isRegistered) {
-                showPersonalDashboard();
+            if (mode === 'personal') {
+                // ถ้ายังไม่ได้ login LINE - แสดงข้อความแนะนำ
+                if (!lineUserId) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: '📱 เปิดผ่าน LINE',
+                        html: `
+                            <p>เพื่อดูข้อมูลส่วนตัว กรุณาเปิดหน้านี้ผ่าน LINE app</p>
+                            <p class="text-muted" style="font-size:0.85rem;">
+                                พิมพ์ในแชท LINE กับ Bot:<br>
+                                <strong>"ดูสถานะ"</strong> หรือ <strong>"ข้อมูลของฉัน"</strong>
+                            </p>
+                        `,
+                        confirmButtonText: 'เข้าใจแล้ว',
+                        confirmButtonColor: '#06C755'
+                    });
+                    return;
+                }
+
+                if (isRegistered) {
+                    showPersonalDashboard();
+                } else {
+                    showRegisterModal();
+                }
             } else {
                 showAllMode();
             }

@@ -465,6 +465,12 @@
                 </a>
             </div>
             <div class="menu-item">
+                <a href="#lineManagement" class="menu-link" data-section="lineManagement">
+                    <i class="fab fa-line" style="color: #06C755;"></i>
+                    <span>จัดการ LINE</span>
+                </a>
+            </div>
+            <div class="menu-item">
                 <a href="#settings" class="menu-link" data-section="settings">
                     <i class="fas fa-cog"></i>
                     <span>ตั้งค่าระบบ</span>
@@ -602,6 +608,88 @@
                                         <tbody id="nightShiftTableBody">
                                             <tr>
                                                 <td colspan="4" class="text-center py-4">
+                                                    <div class="spinner-border text-primary"></div>
+                                                    <p class="mt-2 mb-0">กำลังโหลดข้อมูล...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LINE Management Section -->
+            <div id="lineManagementSection" class="content-section" style="display: none;">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card border-success">
+                            <div
+                                class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fab fa-line"></i> จัดการการเชื่อมต่อ LINE</h5>
+                                <button class="btn btn-light btn-sm" onclick="loadLinkedEmployees()">
+                                    <i class="fas fa-sync-alt"></i> รีเฟรช
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    จัดการการผูกบัญชี LINE กับพนักงาน เพื่อให้พนักงานสามารถดูข้อมูลส่วนตัวผ่าน LINE ได้
+                                </div>
+
+                                <!-- Stats Cards -->
+                                <div class="row mb-4">
+                                    <div class="col-md-4">
+                                        <div class="card text-center bg-success text-white">
+                                            <div class="card-body py-3">
+                                                <h3 id="lineLinkedCount">0</h3>
+                                                <small>ผูก LINE แล้ว</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card text-center bg-secondary text-white">
+                                            <div class="card-body py-3">
+                                                <h3 id="lineUnlinkedCount">0</h3>
+                                                <small>ยังไม่ผูก</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card text-center bg-primary text-white">
+                                            <div class="card-body py-3">
+                                                <h3 id="lineTotalCount">0</h3>
+                                                <small>ทั้งหมด</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Search -->
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" class="form-control" id="lineSearchInput"
+                                        placeholder="ค้นหาชื่อพนักงาน..." oninput="filterLineList()">
+                                </div>
+
+                                <!-- Table -->
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th width="50">#</th>
+                                                <th>ชื่อพนักงาน</th>
+                                                <th>ชื่อ LINE</th>
+                                                <th>วันที่ลงทะเบียน</th>
+                                                <th width="100">สถานะ</th>
+                                                <th width="100">จัดการ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="lineTableBody">
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4">
                                                     <div class="spinner-border text-primary"></div>
                                                     <p class="mt-2 mb-0">กำลังโหลดข้อมูล...</p>
                                                 </td>
