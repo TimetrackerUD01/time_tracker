@@ -286,7 +286,7 @@ class SQLiteService {
             // อัพเดท time_records พร้อม location_out
             const updateRecord = this.db.prepare(`
                 UPDATE time_records 
-                SET clock_out = ?, working_hours = ?, location_out = ?, note = COALESCE(note, '') || ?, synced_to_sheets = 0
+                SET clock_out = ?, working_hours = ?, location_out = ?, note = ?, synced_to_sheets = 0
                 WHERE id = ?
             `);
             updateRecord.run(
@@ -341,7 +341,7 @@ class SQLiteService {
                 SET clock_in = ?,
                     clock_out = ?,
                     working_hours = ?,
-                    note = COALESCE(note, '') || ?,
+                    note = ?,
                     synced_to_sheets = 0
                 WHERE id = ?
             `);
@@ -350,7 +350,7 @@ class SQLiteService {
                 finalClockIn,
                 finalClockOut,
                 workingHours,
-                adminNote ? ` | ${adminNote}` : '',
+                adminNote || '',
                 recordId
             );
 

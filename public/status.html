@@ -578,6 +578,7 @@
         let currentMode = 'personal';
         let selectedEmployee = null;
         let allEmployees = [];
+        let filteredEmployees = [];
         let refreshTimer = null;
 
         // ========== Initialization ==========
@@ -587,6 +588,19 @@
 
             updateClock();
             setInterval(updateClock, 1000);
+
+            // กด Enter ในช่องค้นหาเพื่อเลือกชื่อแรกที่ตรงผลลัพธ์
+            const searchInput = document.getElementById('searchEmployee');
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const firstItem = document.querySelector('.employee-item');
+                    if (firstItem) {
+                        selectEmployee(firstItem, firstItem.dataset.name);
+                        firstItem.scrollIntoView({ block: 'center' });
+                    }
+                }
+            });
 
             await initLiff();
         });
@@ -704,20 +718,58 @@
             const container = document.getElementById('employeeList');
             if (employees.length === 0) {
                 container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div>ไม่พบรายชื่อ</div></div>';
+                filteredEmployees = [];
+                document.getElementById('btnRegister').disabled = true;
                 return;
             }
 
-            container.innerHTML = employees.map(emp => `
-                <div class="employee-item" data-name="${escapeHtml(emp.name)}" onclick="selectEmployee(this, '${escapeHtml(emp.name)}')">
-                    ${escapeHtml(emp.name)}
-                </div>
-            `).join('');
+            filteredEmployees = employees;
+            container.innerHTML = '';
+
+            employees.forEach(emp => {
+                const item = document.createElement('div');
+                item.className = 'employee-item';
+                item.dataset.name = emp.name;
+                item.textContent = emp.name;
+                item.addEventListener('click', () => selectEmployee(item, emp.name));
+                container.appendChild(item);
+            });
+
+            // ถ้าเหลือ 1 รายการให้เลือกอัตโนมัติ เพื่อกดลงทะเบียนได้ทันที
+            if (employees.length === 1) {
+                const onlyItem = container.querySelector('.employee-item');
+                if (onlyItem) selectEmployee(onlyItem, employees[0].name);
+            } else {
+                clearSelectedEmployee();
+            }
         }
 
         function filterEmployees() {
-            const query = document.getElementById('searchEmployee').value.toLowerCase();
-            const filtered = allEmployees.filter(e => e.name.toLowerCase().includes(query));
+            const query = document.getElementById('searchEmployee').value.trim();
+            const normalizedQuery = normalizeText(query);
+            const filtered = allEmployees.filter(e => matchesEmployee(e, normalizedQuery));
             renderEmployeeList(filtered);
+        }
+
+        function normalizeText(text) {
+            return (text || '').toString().toLowerCase().replace(/\s+/g, '').replace(/[-_]/g, '');
+        }
+
+        // รองรับค้นหาทั้งชื่อและตัวเลขขึ้นต้นก่อนเครื่องหมาย - เช่น "1017-..."
+        function matchesEmployee(emp, normalizedQuery) {
+            if (!normalizedQuery) return true;
+
+            const normalizedName = normalizeText(emp.name);
+            if (normalizedName.includes(normalizedQuery)) return true;
+
+            const codePrefix = (emp.name.split(/[-\s]/)[0] || '').toLowerCase();
+            return codePrefix.startsWith(normalizedQuery);
+        }
+
+        function clearSelectedEmployee() {
+            document.querySelectorAll('.employee-item').forEach(e => e.classList.remove('selected'));
+            selectedEmployee = null;
+            document.getElementById('btnRegister').disabled = true;
         }
 
         function selectEmployee(el, name) {

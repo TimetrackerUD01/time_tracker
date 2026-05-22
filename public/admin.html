@@ -963,19 +963,30 @@
                             <input type="date" class="form-control" id="manualDate">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label">เวลา</label>
+                            <label class="form-label">เวลาเข้า</label>
                             <input type="time" class="form-control" id="manualTime">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
+                            <label class="form-label">เวลาออก</label>
+                            <input type="time" class="form-control" id="manualTimeOut">
+                        </div>
+                        <div class="col-md-2">
                             <label class="form-label">หมายเหตุ</label>
                             <input type="text" class="form-control" id="manualNote" placeholder="หมายเหตุ (ถ้ามี)">
                         </div>
-                        <div class="col-md-2 d-flex align-items-end gap-2">
-                            <button class="btn btn-success" onclick="manualClockIn()">
-                                <i class="fas fa-sign-in-alt"></i> เข้า
-                            </button>
-                            <button class="btn btn-danger" onclick="manualClockOut()">
-                                <i class="fas fa-sign-out-alt"></i> ออก
+                        <div class="col-md-1 d-flex align-items-end">
+                            <div class="d-flex flex-column gap-2 w-100">
+                                <button class="btn btn-success" onclick="manualClockIn()">
+                                    <i class="fas fa-sign-in-alt"></i> เข้า
+                                </button>
+                                <button class="btn btn-danger" onclick="manualClockOut()">
+                                    <i class="fas fa-sign-out-alt"></i> ออก
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button class="btn btn-primary w-100" onclick="manualClockInOut()">
+                                <i class="fas fa-sync-alt"></i> เข้า + ออก
                             </button>
                         </div>
                     </div>
@@ -2135,6 +2146,85 @@
                 } else {
                     const errorText = result.error || (result.errors && result.errors.join('\n')) || 'ไม่สามารถลงเวลาออกได้';
                     Swal.fire('ผิดพลาด', errorText, 'error');
+                }
+            } catch (error) {
+                Swal.fire('ผิดพลาด', error.message, 'error');
+            }
+        }
+
+        async function manualClockInOut() {
+            const employees = getSelectedManualEmployees();
+            const date = document.getElementById('manualDate').value;
+            const timeIn = document.getElementById('manualTime').value;
+            const timeOut = document.getElementById('manualTimeOut').value;
+            const note = document.getElementById('manualNote').value;
+
+            if (!employees.length || !date || !timeIn || !timeOut) {
+                Swal.fire('ผิดพลาด', 'กรุณาเลือกพนักงาน (เลือกได้หลายคน) พร้อมระบุวันที่, เวลาเข้า และเวลาออก', 'error');
+                return;
+            }
+
+            // เตือนถ้าเวลาออกไม่มากกว่าเวลาเข้า
+            const inDateTime = new Date(`${date}T${timeIn}`);
+            const outDateTime = new Date(`${date}T${timeOut}`);
+            if (inDateTime >= outDateTime) {
+                const confirm = await Swal.fire({
+                    title: 'ยืนยันเวลา?',
+                    text: 'เวลาออกควรมากกว่าเวลาเข้า คุณต้องการดำเนินการต่อหรือไม่?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'ดำเนินการต่อ',
+                    cancelButtonText: 'ยกเลิก'
+                });
+                if (!confirm.isConfirmed) return;
+            }
+
+            const summary = [];
+            const errors = [];
+
+            try {
+                let successIn = false;
+                let successOut = false;
+
+                // ลงเวลาเข้า
+                const clockInRes = await makeApiCall(`${API_BASE_URL}/api/admin/manual-clockin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ employees, date, time: timeIn, note })
+                });
+                const clockInResult = await clockInRes.json();
+                successIn = !!clockInResult.success;
+                summary.push(`เข้า: ${clockInResult.message || (clockInResult.success ? 'สำเร็จ' : 'มีข้อผิดพลาด')}`);
+                if (!clockInResult.success) {
+                    const msg = clockInResult.error || (clockInResult.errors && clockInResult.errors.join('\n')) || 'ลงเวลาเข้าไม่สำเร็จ';
+                    errors.push(`เข้า: ${msg}`);
+                }
+
+                // ลงเวลาออก
+                const clockOutRes = await makeApiCall(`${API_BASE_URL}/api/admin/manual-clockout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ employees, date, time: timeOut, note })
+                });
+                const clockOutResult = await clockOutRes.json();
+                successOut = !!clockOutResult.success;
+                summary.push(`ออก: ${clockOutResult.message || (clockOutResult.success ? 'สำเร็จ' : 'มีข้อผิดพลาด')}`);
+                if (!clockOutResult.success) {
+                    const msg = clockOutResult.error || (clockOutResult.errors && clockOutResult.errors.join('\n')) || 'ลงเวลาออกไม่สำเร็จ';
+                    errors.push(`ออก: ${msg}`);
+                }
+
+                const hasSuccess = successIn || successOut;
+                if (errors.length) {
+                    Swal.fire(hasSuccess ? 'สำเร็จบางส่วน' : 'ผิดพลาด', `${summary.join('\n')}\n${errors.join('\n')}`, hasSuccess ? 'info' : 'error');
+                } else {
+                    Swal.fire('สำเร็จ!', summary.join('\n'), 'success');
+                }
+
+                if (hasSuccess) {
+                    loadStats();
+                    loadEmployees();
+                    document.getElementById('manualNote').value = '';
                 }
             } catch (error) {
                 Swal.fire('ผิดพลาด', error.message, 'error');
