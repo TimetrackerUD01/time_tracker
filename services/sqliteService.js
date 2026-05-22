@@ -115,25 +115,28 @@ class SQLiteService {
     `);
 
         // 🆕 เพิ่ม columns สำหรับ LINE User ID (Personal Dashboard)
-        try {
-            this.db.exec(`ALTER TABLE employees ADD COLUMN line_user_id TEXT UNIQUE`);
-            console.log('✅ Added line_user_id column to employees');
-        } catch (e) { /* Column อาจมีอยู่แล้ว */ }
+        const employeeColumns = this.db.prepare('PRAGMA table_info(employees)').all();
+        const hasColumn = (name) => employeeColumns.some(c => c.name === name);
+        const addColumn = (name, definition) => {
+            try {
+                this.db.exec(`ALTER TABLE employees ADD COLUMN ${definition}`);
+                console.log(`✅ Added ${name} column to employees`);
+            } catch (e) {
+                console.warn(`⚠️ Failed to add ${name} column (may already exist):`, e.message);
+            }
+        };
 
-        try {
-            this.db.exec(`ALTER TABLE employees ADD COLUMN line_name TEXT`);
-            console.log('✅ Added line_name column to employees');
-        } catch (e) { /* Column อาจมีอยู่แล้ว */ }
+        if (!hasColumn('line_user_id')) addColumn('line_user_id', 'line_user_id TEXT');
+        if (!hasColumn('line_name')) addColumn('line_name', 'line_name TEXT');
+        if (!hasColumn('line_picture')) addColumn('line_picture', 'line_picture TEXT');
+        if (!hasColumn('registered_at')) addColumn('registered_at', 'registered_at TEXT');
 
+        // Unique index สำหรับ line_user_id (อนุญาตค่า NULL ซ้ำกันได้)
         try {
-            this.db.exec(`ALTER TABLE employees ADD COLUMN line_picture TEXT`);
-            console.log('✅ Added line_picture column to employees');
-        } catch (e) { /* Column อาจมีอยู่แล้ว */ }
-
-        try {
-            this.db.exec(`ALTER TABLE employees ADD COLUMN registered_at TEXT`);
-            console.log('✅ Added registered_at column to employees');
-        } catch (e) { /* Column อาจมีอยู่แล้ว */ }
+            this.db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_employees_line_user_id ON employees(line_user_id)');
+        } catch (e) {
+            console.warn('⚠️ Failed to create unique index on line_user_id:', e.message);
+        }
 
         // Import initial night shift employees from config (if table is empty)
         this.initNightShiftFromConfig();
@@ -239,7 +242,7 @@ class SQLiteService {
                 ADMIN_INFO.lineName,
                 ADMIN_INFO.linePicture,
                 ADMIN_INFO.locationIn,
-                adminNote || 'Admin Manual'
+                adminNote || ''
             );
 
             // เพิ่มพนักงานถ้ายังไม่มี
@@ -347,7 +350,7 @@ class SQLiteService {
                 finalClockIn,
                 finalClockOut,
                 workingHours,
-                adminNote ? ` | [แก้ไข] ${adminNote}` : ' | [แก้ไขเวลา]',
+                adminNote ? ` | ${adminNote}` : '',
                 recordId
             );
 
