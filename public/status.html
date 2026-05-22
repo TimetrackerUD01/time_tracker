@@ -81,18 +81,99 @@
             color: #333;
         }
 
-        .clock {
-            font-family: 'Digital dream Fat', monospace;
-            font-size: 32px;
-            color: #00f6fa;
-            letter-spacing: 3px;
-            text-shadow: 1px 1px 2px teal, 0 0 25px green;
-            background: #333;
-            padding: 10px 15px;
-            border-radius: 10px;
+                .flip-clock-wrapper {
+            background: #dbe9ee;
+            padding: 8px 12px;
+            border-radius: 20px;
+            box-shadow: 
+                inset 2px 2px 5px rgba(0,0,0,0.1), 
+                inset -2px -2px 5px rgba(255,255,255,0.8),
+                4px 4px 10px rgba(0,0,0,0.1),
+                -4px -4px 10px rgba(255,255,255,0.8);
+            border: 2px solid #eef6f9;
+            display: inline-flex;
+            margin: 15px auto;
+            position: relative;
+            overflow: hidden;
+            max-width: 95%;
+            box-sizing: border-box;
+        }
+        .flip-clock-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 40%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.4), rgba(255,255,255,0));
+            pointer-events: none;
+            z-index: 10;
+        }
+        .flip-clock {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3px;
+            font-family: 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif;
+            width: 100%;
+        }
+        .flip-unit {
+            display: flex;
+            gap: 2px;
+            perspective: 400px;
+        }
+        .flip-card {
+            background: #e1edf2;
+            color: #556b78;
+            font-size: 26px;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 6px;
+            position: relative;
+            min-width: 16px;
             text-align: center;
-            margin-top: 15px;
-            border: 3px solid #555;
+            box-shadow: 
+                1px 1px 3px rgba(0,0,0,0.15),
+                -1px -1px 3px rgba(255,255,255,0.9),
+                inset 1px 1px 2px rgba(255,255,255,1);
+            border: 1px solid #c9d8de;
+            overflow: hidden;
+            text-shadow: 1px 1px 1px rgba(255,255,255,0.7);
+        }
+        .flip-card::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(0,0,0,0.15);
+            margin-top: -1px;
+            box-shadow: 0 1px 1px rgba(255,255,255,0.6);
+            z-index: 2;
+        }
+        .flip-colon {
+            font-size: 20px;
+            font-weight: bold;
+            color: #556b78;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            animation: blink 1s infinite;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            margin: 0 1px;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .flip-anim {
+            animation: flipAnim 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: center top;
+            backface-visibility: hidden;
+            display: inline-block;
+        }
+        @keyframes flipAnim {
+            0% { transform: rotateX(-90deg) scaleY(1.1); filter: brightness(0.3); }
+            100% { transform: rotateX(0deg) scaleY(1); filter: brightness(1); }
         }
 
         /* Profile Card */
@@ -467,7 +548,7 @@
                 <img src="/logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
                 <h1>📊 สถานะการลงเวลา</h1>
                 <div class="subtitle">องค์การบริหารส่วนตำบลข่าใหญ่</div>
-                <div class="clock" id="currentTime">--:--:--</div>
+                <div class="flip-clock-wrapper"><div id="MyClockDisplay" class="flip-clock"></div></div>
             </div>
 
             <!-- Profile Card (แสดงเมื่อ login + ลงทะเบียนแล้ว) -->
@@ -1037,7 +1118,41 @@
 
         function updateClock() {
             const now = new Date();
-            document.getElementById('currentTime').textContent = now.toLocaleTimeString('th-TH');
+            let h = now.getHours();
+            let m = now.getMinutes();
+            let s = now.getSeconds();
+            
+            var hStr = h < 10 ? "0" + h : h.toString();
+            var mStr = m < 10 ? "0" + m : m.toString();
+            var sStr = s < 10 ? "0" + s : s.toString();
+            
+            if (!document.getElementById('digit-h1')) {
+                var clockHtml = `
+                    <div class="flip-unit"><span class="flip-card" id="digit-h1"></span><span class="flip-card" id="digit-h2"></span></div>
+                    <div class="flip-colon">:</div>
+                    <div class="flip-unit"><span class="flip-card" id="digit-m1"></span><span class="flip-card" id="digit-m2"></span></div>
+                    <div class="flip-colon">:</div>
+                    <div class="flip-unit"><span class="flip-card" id="digit-s1"></span><span class="flip-card" id="digit-s2"></span></div>
+                `;
+                document.getElementById("MyClockDisplay").innerHTML = clockHtml;
+            }
+
+            function updateDigit(id, val) {
+                var el = document.getElementById(id);
+                if (el && el.innerText !== val) {
+                    el.classList.remove('flip-anim');
+                    void el.offsetWidth; // trigger reflow
+                    el.innerText = val;
+                    el.classList.add('flip-anim');
+                }
+            }
+
+            updateDigit('digit-h1', hStr[0]);
+            updateDigit('digit-h2', hStr[1]);
+            updateDigit('digit-m1', mStr[0]);
+            updateDigit('digit-m2', mStr[1]);
+            updateDigit('digit-s1', sStr[0]);
+            updateDigit('digit-s2', sStr[1]);
         }
 
         function escapeHtml(text) {
