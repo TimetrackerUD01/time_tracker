@@ -1,6 +1,6 @@
 {
   "name": "time-tracker-render",
-  "version": "2.1.4",
+  "version": "2.1.7",
   "description": "Time Tracker with Employee Validation, Admin Panel and Excel Export for Render.com",
   "main": "server.js",
   "scripts": {
