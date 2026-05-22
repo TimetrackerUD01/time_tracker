@@ -1050,7 +1050,7 @@
         var isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
         var apiUrl = isProduction ?
             window.location.origin + '/api' :
-            'http://localhost:3000/api';
+            window.location.origin + '/api';
 
         var owner = 'องค์การบริหารส่วนตำบลข่าใหญ่';
         var connectionRetryCount = 0;
